@@ -1,6 +1,7 @@
 # 🌟 Live Demos
 
 Welcome aboard! This repository hosts the live demos that you can explore directly in your browser.
+
 ---
 
 ## Guided Projects
