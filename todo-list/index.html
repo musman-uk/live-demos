@@ -1,99 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>To‑Do List Console</title>
+  <meta charset="UTF-8" />
+  <title>To Do List Console</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --accent: #58a6ff;
+      --muted: #8b949e;
+    }
     body {
-      background: #0d1117;
-      color: #c9d1d9;
-      font-family: monospace;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       padding: 2rem;
     }
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: var(--accent);
+      margin: 0 0 0.5rem 0;
+      font-size: 1.5rem;
+    }
+    .sub {
+      color: var(--muted);
+      margin: 0 0 1rem 0;
+      font-size: 0.95rem;
+    }
     .console {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 6px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
       padding: 1rem;
-      max-width: 600px;
-      margin: auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.6);
+      min-height: 320px;
+      max-height: 70vh;
+      overflow-y: auto;
     }
-    .line { margin: 0.3rem 0; }
-    .prompt { color: #58a6ff; }
-    input {
-      background: #0d1117;
-      border: none;
-      border-bottom: 1px solid #58a6ff;
-      color: #c9d1d9;
-      font-family: monospace;
-      font-size: 1rem;
-      width: 100%;
+    .line { margin: 0.25rem 0; white-space: pre-wrap; }
+    .prompt { color: var(--accent); }
+    .muted { color: var(--muted); }
+    .spacer { height: 1rem; }
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
       margin-top: 1rem; /* space between menu and input */
-      outline: none;
+      border-top: 1px dashed var(--border);
+      padding-top: 0.75rem;
     }
+    .caret {
+      color: var(--accent);
+      user-select: none;
+    }
+    input[type="text"] {
+      flex: 1;
+      background: var(--bg);
+      color: var(--text);
+      border: none;
+      border-bottom: 1px solid var(--accent);
+      outline: none;
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.25rem 0.35rem;
+    }
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    button {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    details {
+      margin-top: 1rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    summary {
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    pre {
+      margin-top: 0.75rem;
+      background: #0b0f14;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .help-list { margin: 0.25rem 0; }
   </style>
 </head>
 <body>
-  <div class="console" id="console">
-    <div class="line">Python 3.11.5 (default, Sep 2025)</div>
-    <div class="line">Type "help", "credits" or "license" for more information.</div>
-    <div class="line prompt">&gt;&gt;&gt; Welcome to the To‑Do List Console</div>
-    <div class="line">1. Add Task</div>
-    <div class="line">2. View Tasks</div>
-    <div class="line">3. Remove Task</div>
-    <div class="line">4. Exit</div>
-    <input type="text" id="input" placeholder=">>> Enter choice here">
+  <div class="wrap">
+    <h1>To Do List Console</h1>
+    <p class="sub">A guided project that feels like a Python terminal. Type commands or choose from the menu. Everything here is live and interactive.</p>
+
+    <div class="console" id="console" aria-live="polite">
+      <div class="line">Python 3.11.5 (default, Sep 2025)</div>
+      <div class="line">Type "help", "credits", or "license" for more information.</div>
+      <div class="line prompt">&gt;&gt;&gt; Welcome to the To Do List Console</div>
+
+      <div class="line">1. Add Task</div>
+      <div class="line">2. View Tasks</div>
+      <div class="line">3. Remove Task</div>
+      <div class="line">4. Exit</div>
+      <div class="line muted">Commands: help, license, credits, clear, version, exit, quit</div>
+
+      <div class="spacer"></div>
+
+      <div class="input-row">
+        <span class="caret">&gt;&gt;&gt;</span>
+        <input type="text" id="input" placeholder="Enter choice or command" autocomplete="off" aria-label="Console input" />
+      </div>
+      <div class="controls">
+        <button id="btn-add" title="Add Task">Add</button>
+        <button id="btn-view" title="View Tasks">View</button>
+        <button id="btn-remove" title="Remove Task">Remove</button>
+        <button id="btn-clear" title="Clear Screen">Clear</button>
+      </div>
+    </div>
+
+    <details>
+      <summary>Original Python code used for this console demo</summary>
+      <pre><code>tasks = []
+
+def show_menu():
+    print("1. Add Task")
+    print("2. View Tasks")
+    print("3. Remove Task")
+    print("4. Exit")
+
+def add_task():
+    task = input("Enter new task: ").strip()
+    if task:
+        tasks.append(task)
+        print(f"Task added: {task}")
+    else:
+        print("No task entered.")
+
+def view_tasks():
+    if not tasks:
+        print("No tasks yet.")
+    else:
+        for i, t in enumerate(tasks, start=1):
+            print(f"{i}. {t}")
+
+def remove_task():
+    if not tasks:
+        print("No tasks to remove.")
+        return
+    try:
+        num = int(input("Enter task number to remove: "))
+        idx = num - 1
+        if 0 <= idx &lt; len(tasks):
+            removed = tasks.pop(idx)
+            print(f"Removed: {removed}")
+        else:
+            print("Invalid task number.")
+    except ValueError:
+        print("Please enter a valid integer.")
+
+def main():
+    print('Python 3.11.5 (default, Sep 2025)')
+    print('Type "help", "credits", or "license" for more information.')
+    print(">>> Welcome to the To Do List Console")
+    while True:
+        show_menu()
+        choice = input(">>> ").strip().lower()
+        if choice in ("help",):
+            print("Help: Enter 1 to add, 2 to view, 3 to remove, 4 to exit.")
+        elif choice in ("license",):
+            print("License: MIT License. Use freely with attribution.")
+        elif choice in ("credits",):
+            print("Credits: Built by Mohammed as a guided project.")
+        elif choice in ("version",):
+            print("Python 3.11.5")
+        elif choice in ("clear",):
+            print("\n" * 50)
+        elif choice in ("exit", "quit", "4"):
+            print("Exiting...")
+            break
+        elif choice in ("1",):
+            add_task()
+        elif choice in ("2",):
+            view_tasks()
+        elif choice in ("3",):
+            remove_task()
+        else:
+            print("Invalid choice. Enter 1, 2, 3, or 4.")
+
+if __name__ == "__main__":
+    main()</code></pre>
+    </details>
   </div>
 
   <script>
     const input = document.getElementById('input');
     const consoleDiv = document.getElementById('console');
-    let tasks = [];
+    const btnAdd = document.getElementById('btn-add');
+    const btnView = document.getElementById('btn-view');
+    const btnRemove = document.getElementById('btn-remove');
+    const btnClear = document.getElementById('btn-clear');
 
-    function printLine(text, cls="line") {
+    let tasks = [];
+    const versionStr = "Python 3.11.5";
+
+    function printLine(text, cls = "line") {
       const div = document.createElement('div');
       div.className = cls;
       div.textContent = text;
-      consoleDiv.insertBefore(div, input);
+      consoleDiv.insertBefore(div, consoleDiv.querySelector('.spacer'));
       consoleDiv.scrollTop = consoleDiv.scrollHeight;
     }
 
-    input.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        const choice = input.value.trim();
-        input.value = '';
-        printLine(">>> " + choice, "prompt");
+    function showMenu() {
+      printLine("1. Add Task");
+      printLine("2. View Tasks");
+      printLine("3. Remove Task");
+      printLine("4. Exit");
+    }
 
-        if (choice === '1') {
-          const task = prompt("Enter new task:");
-          if (task) {
-            tasks.push(task);
-            printLine("Task added: " + task);
-          }
-        } else if (choice === '2') {
-          if (tasks.length === 0) {
-            printLine("No tasks yet.");
-          } else {
-            tasks.forEach((t, i) => printLine((i+1) + ". " + t));
-          }
-        } else if (choice === '3') {
-          const num = prompt("Enter task number to remove:");
-          const idx = parseInt(num) - 1;
-          if (!isNaN(idx) && idx >= 0 && idx < tasks.length) {
-            printLine("Removed: " + tasks[idx]);
-            tasks.splice(idx, 1);
-          } else {
-            printLine("Invalid task number.");
-          }
-        } else if (choice === '4') {
-          printLine("Exiting... (refresh to restart)");
-          input.disabled = true;
-        } else {
-          printLine("Invalid choice. Enter 1, 2, 3, or 4.");
-        }
+    function addTaskInteractive() {
+      const task = prompt("Enter new task:");
+      if (task && task.trim().length > 0) {
+        tasks.push(task.trim());
+        printLine("Task added: " + task.trim());
+      } else {
+        printLine("No task entered.");
       }
-    });
-  </script>
-</body>
-</html>
+    }
+
+    function viewTasksInteractive() {
+      if (tasks.length === 0) {
+        printLine("No tasks yet.");
+      } else {
+        tasks.forEach((t, i) => printLine((i + 1) + ". " + t));
+      }
+    }
+
+    function removeTaskInteractive() {
+      if (tasks.length === 0) {
+        printLine("No tasks to remove.");
+        return;
+      }
+      const num = prompt("Enter task number to remove:");
+      const idx = parseInt(num
