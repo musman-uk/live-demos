@@ -10,4 +10,5 @@ All guided projects were originally created on **Mimo** and extended here for ac
 
 ---
 
-Thank you for visiting 🌟 Wishing you success and joy in your own projects!
+Thank you for visiting, I wish you the very best with your projects. 🌟
+ 
