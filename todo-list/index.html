@@ -45,9 +45,9 @@
       "quit": () => commands["4"](),
       "help": () => ["1=Add","2=View","3=Remove","4=Exit","help, license, credits, clear, version"].forEach(x=>print(x)),
       "license": () => print("MIT License. Use freely with attribution."),
-      "credits": () => print("Built by Mohammed as a guided project."),
+      "credits": () => print("Original exercise sourced via Mimo and extended for interactivity."),
       "version": () => print("Python 3.11.5"),
-      "clear": () => { [...consoleDiv.querySelectorAll('.line,.prompt')].forEach(el=>el.remove()); print("Console cleared."); }
+      "clear": () => { [...consoleDiv.querySelectorAll('.line,.prompt')].forEach(el=>el.remove()); print("Console cleared."); print(">>> Welcome to the To Do List Console","prompt"); }
     };
 
     input.addEventListener('keydown', e => {
