@@ -1,6 +1,6 @@
-# 🌟 Live Demos
+# 🌟 Welcome aboard to my live demos!
 
-Welcome aboard! This repository hosts the live demos that you can explore directly in your browser.
+This repository hosts the live demos for my projects, which you can explore directly in your browser.
 
 ---
 
