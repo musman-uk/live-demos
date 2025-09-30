@@ -1,6 +1,30 @@
-# Live Demos
+# 🌟 Live Demos
 
-This repository hosts the live, interactive demos for Projects.  
-👉 Visit the hub page here: [musman-uk.github.io/live-demos](https://musman-uk.github.io/live-demos/)
+Welcome to my collection of projects.  
+This repository hosts the live, interactive demos that you can explore directly in your browser.  
 
-For full details, source code and documentation, see my [portfolio](https://github.com/musman-uk/portfolio).
+---
+
+## Guided Projects
+
+| 🧩 Project | 🛠️ Stack | 📄 Description | 🌐 Live Demo | 💻 Source Code |
+|------------|-----------|----------------|--------------|----------------|
+| ✅ To Do List | Python | A command line task manager that allows users to add, complete, and delete tasks. Demonstrates control flow, user input handling, and list operations. |  |  |
+| 📊 Transaction Analyser | Python | Parses transaction data to calculate totals, categorize expenses, and generate summaries. Highlights string manipulation, loops, and conditional logic. |  |  |
+| 🔄 Unit Converter | HTML, CSS, JavaScript | Converts between metric and imperial units with real time input validation. Demonstrates DOM manipulation, event listeners, and responsive design. |  |  |
+| 🏆 Score Keeper | HTML, CSS, JavaScript, React | Interactive scoreboard with adjustable win conditions and reset functionality. Uses React state management and conditional rendering. |  |  |
+| 🐾 Pixel Paws | HTML, CSS, JavaScript | A pixel art canvas featuring pet sprites. Users can draw, erase, and reset the grid. Highlights array logic, event handling, and creative UI design. |  |  |
+| 🖼️ Interactive Gallery | HTML, CSS, JavaScript | A responsive image gallery with modal previews, hover animations, and dynamic layout. Demonstrates CSS transitions and JavaScript interactivity. |  |  |
+| 🔐 Caesar Cipher | HTML, CSS, JavaScript | A simple encryption tool using Caesar cipher logic. Users can encode and decode messages with adjustable shift values. Demonstrates string manipulation and modular functions. |  |  |
+
+---
+
+## Notes
+
+- This repository is dedicated to live demos only.  
+- Full source code and documentation are maintained in my [portfolio repository](https://github.com/musman-uk/portfolio).  
+- Guided projects were originally created through **Mimo**.  
+
+---
+
+Thank you for visiting. I hope these demos give you a clear sense of how I approach building, structuring, and presenting projects.
