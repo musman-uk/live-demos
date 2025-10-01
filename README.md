@@ -1,14 +1,7 @@
 # 🌟 Live Demos
 
-Welcome aboard to my live demos!  
-👉 Explore them here: [musman-uk.github.io/live-demos](https://musman-uk.github.io/live-demos)
+Welcome aboard to my live demos! 👉 Explore them here: [musman-uk.github.io/live-demos](https://musman-uk.github.io/live-demos)
 
----
+If you arrived here by accident, and are looking for my main portfolio instead, you can find it at: [github.com/musman-uk/portfolio](https://github.com/musman-uk/portfolio)
 
-This repository hosts interactive projects you can open directly in your browser.  
-All guided projects were originally created on **Mimo** and extended here for accessibility and exploration.  
-
----
-
-Thank you for visiting, I wish you the very best with your projects. 🌟
- 
+Safe journey, and the best of luck with your travels, fellow explorer! 🚀
