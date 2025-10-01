@@ -7,25 +7,39 @@
   <script defer src="https://pyscript.net/latest/pyscript.js"></script>
   <style>
     body {
+      margin:0;
       background:#0d1117;
       color:#c9d1d9;
       font-family:monospace;
-      padding:1rem;
-      margin:0;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
     }
     .console {
       background:#161b22;
       border:1px solid #30363d;
       border-radius:6px;
+      width:95%;
+      max-width:800px;
+      height:90vh;
+      display:flex;
+      flex-direction:column;
       padding:1rem;
-      max-width:700px;
-      margin:auto;
-      overflow:auto;
+      box-sizing:border-box;
     }
-    .prompt { color:#58a6ff; }
-    input {
-      width:100%;
-      margin-top:0.5rem;
+    #output {
+      flex:1;
+      overflow-y:auto;
+      white-space:pre-wrap;
+    }
+    #prompt {
+      display:flex;
+      align-items:center;
+    }
+    #prompt span { color:#58a6ff; margin-right:0.5rem; }
+    #choice {
+      flex:1;
       background:#0d1117;
       border:none;
       border-bottom:1px solid #58a6ff;
@@ -37,46 +51,31 @@
 </head>
 <body>
   <div class="console">
-    <div>>> Transaction Analyzer Console</div>
-    <div>1. Print summary</div>
-    <div>2. Analyze transactions</div>
-    <div>3. Add a transaction</div>
-    <div>4. Stop program</div>
-    <input id="choice" placeholder=">>> Enter option number">
-    <pre id="output"></pre>
+    <div id="output">Python 3.11.5 (PyScript)\nType "1", "2", "3", or "4" to choose an option.\n</div>
+    <div id="prompt"><span>>> </span><input id="choice" placeholder="Enter option number"></div>
   </div>
 
   <py-script>
-data = [
-  (749.17, "Investment Return"),
-  (-11.54, "Utilities"),
-  (-247.58, "Online Shopping"),
-  (981.17, "Investment Return"),
-  (-410.65, "Rent"),
-  (310.60, "Rent"),
-  (563.70, "Gift"),
-  (220.79, "Salary"),
-  (-49.85, "Car Maintenance"),
-  (308.49, "Salary"),
-  (-205.55, "Car Maintenance"),
-  (870.64, "Salary"),
-  (-881.51, "Utilities"),
-  (518.14, "Salary"),
-  (-264.66, "Groceries")
-]
-
 from js import document
 
+data = [
+  (749.17, "Investment Return"), (-11.54, "Utilities"), (-247.58, "Online Shopping"),
+  (981.17, "Investment Return"), (-410.65, "Rent"), (310.60, "Rent"), (563.70, "Gift"),
+  (220.79, "Salary"), (-49.85, "Car Maintenance"), (308.49, "Salary"),
+  (-205.55, "Car Maintenance"), (870.64, "Salary"), (-881.51, "Utilities"),
+  (518.14, "Salary"), (-264.66, "Groceries")
+]
+
 def print_summary():
-    deposits = [amt for amt, _ in data if amt >= 0]
-    withdrawals = [amt for amt, _ in data if amt < 0]
+    deposits = [amt for amt,_ in data if amt>=0]
+    withdrawals = [amt for amt,_ in data if amt<0]
     return (f"Total deposited: {sum(deposits):.2f}\n"
             f"Total withdrawn: {sum(withdrawals):.2f}\n"
             f"Balance: {sum(deposits)+sum(withdrawals):.2f}")
 
 def analyze_transactions():
-    deposits = [amt for amt, _ in data if amt >= 0]
-    withdrawals = [amt for amt, _ in data if amt < 0]
+    deposits = [amt for amt,_ in data if amt>=0]
+    withdrawals = [amt for amt,_ in data if amt<0]
     avg = lambda arr: sum(arr)/len(arr) if arr else 0
     return (f"Average deposit: {avg(deposits):.2f}\n"
             f"Average withdrawal: {avg(withdrawals):.2f}\n"
@@ -102,7 +101,9 @@ def handle_choice(event):
         out = "Exiting program..."
     else:
         out = "Invalid choice."
-    document.getElementById("output").textContent = out
+    output = document.getElementById("output")
+    output.textContent += f">>> {choice}\n{out}\n"
+    output.scrollTop = output.scrollHeight
     document.getElementById("choice").value = ""
 
 document.getElementById("choice").addEventListener("change", handle_choice)
