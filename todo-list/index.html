@@ -51,22 +51,7 @@
       font-family: inherit;
       font-size: 1em;
       outline: none;
-      caret-color: transparent;
-      position: relative;
-    }
-    /* Blinking block cursor */
-    #command::after {
-      content: "";
-      display: inline-block;
-      width: 8px;
-      height: 1em;
-      background: #fff;
-      margin-left: 2px;
-      vertical-align: bottom;
-      animation: blink 1s steps(1) infinite;
-    }
-    @keyframes blink {
-      50% { background: transparent; }
+      caret-color: #fff; /* blinking caret */
     }
     details {
       margin-top: 0.5em;
@@ -87,8 +72,11 @@
 Welcome to To Do List  
 
 Options:  
+
 1. Add Task  
+
 2. Remove Task  
+
 3. Quit  
     </div>
     <div id="input-line">
@@ -105,22 +93,19 @@ def show_list():
     if len(todo_list) > 0:
         index = 1
         for task in todo_list:
-            print(f"{index}. {task}")
+            print(f"{index}. {task}\\n")
             index += 1
-    print()
 
 def add_task(task):
     todo_list.append(task)
-    print(f"Task '{task}' added to the To Do List")
-    print()
+    print(f"Task '{task}' added to the To Do List\\n")
 
 def remove_task():
     if len(todo_list) > 0:
         removed_task = todo_list.pop()
-        print(f"Task '{removed_task}' removed from the To Do List")
+        print(f"Task '{removed_task}' removed from the To Do List\\n")
     else:
-        print("Your To Do List is empty")
-    print()
+        print("Your To Do List is empty\\n")
   </script>
 
   <script>
@@ -131,7 +116,7 @@ def remove_task():
       return pyodide;
     })();
 
-    let awaitingTask = false; // state flag
+    let awaitingTask = false;
 
     async function runCommand(cmd) {
       let pyodide = await pyodideInstance;
@@ -143,20 +128,20 @@ def remove_task():
       const outDiv = document.getElementById("output");
 
       if (awaitingTask) {
-        // treat input as the new task
         await pyodide.runPythonAsync(`add_task(${JSON.stringify(cmd)})`);
         awaitingTask = false;
-        outDiv.textContent += `\n>>> ${cmd}\n${output}`;
+        outDiv.textContent += `\n>>> ${cmd}\n\n${output}`;
         document.getElementById("command").placeholder = "Enter your choice 1, 2, or 3:";
+        outDiv.scrollTop = outDiv.scrollHeight;
         return;
       }
 
       if (cmd === "1") {
-        output = "Adding task\nEnter the task:";
+        output = "Adding task\n\nEnter the task:";
         awaitingTask = true;
         document.getElementById("command").placeholder = "Type your new task here:";
       } else if (cmd === "2") {
-        output = "Removing task\n";
+        output = "Removing task\n\n";
         await pyodide.runPythonAsync("remove_task()");
       } else if (cmd === "3") {
         output = "Quitting";
@@ -164,7 +149,7 @@ def remove_task():
         output = "Invalid choice";
       }
 
-      outDiv.textContent += `\n>>> ${cmd}\n${output}`;
+      outDiv.textContent += `\n>>> ${cmd}\n\n${output}`;
       outDiv.scrollTop = outDiv.scrollHeight;
     }
 
