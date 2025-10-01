@@ -15,7 +15,7 @@
       border: 1px solid #444;
       padding: 10px;
       background: #000;
-      min-height: 150px;
+      min-height: 200px;
       white-space: pre-wrap;
     }
     button {
@@ -35,40 +35,78 @@
 </head>
 <body>
   <h2>Transaction Analyser (Python‑powered)</h2>
-  <p>Select a transaction type:</p>
-  <button onclick="runPython(1)">1. Deposit</button>
-  <button onclick="runPython(2)">2. Withdrawal</button>
-  <button onclick="runPython(3)">3. Transfer</button>
+  <button onclick="runPython('print_summary(data)')">Print Summary</button>
+  <button onclick="runPython('analyze_transactions(data)')">Analyse Transactions</button>
+  <button onclick="clearTerminal()">Clear</button>
 
   <div id="terminal">>>> Ready for input...</div>
 
+  <!-- Python code is defined but not executed until JS calls it -->
   <script type="text/python" id="py-code">
-def analyse(choice: int) -> str:
-    if choice == 1:
-        return "Deposit selected. Funds added."
-    elif choice == 2:
-        return "Withdrawal selected. Funds deducted."
-    elif choice == 3:
-        return "Transfer selected. Funds moved."
-    else:
-        return "Invalid choice."
+data = [
+  (749.17, "Investment Return"),
+  (-11.54, "Utilities"),
+  (-247.58, "Online Shopping"),
+  (981.17, "Investment Return"),
+  (-410.65, "Rent"),
+  (310.60, "Rent"),
+  (563.70, "Gift"),
+  (220.79, "Salary"),
+  (-49.85, "Car Maintenance"),
+  (308.49, "Salary"),
+  (-205.55, "Car Maintenance"),
+  (870.64, "Salary"),
+  (-881.51, "Utilities"),
+  (518.14, "Salary"),
+  (-264.66, "Groceries")
+]
+
+def print_summary(transactions):
+    deposits = [t[0] for t in transactions if t[0] >= 0]
+    total_deposited = sum(deposits)
+    print(f"Total deposited: {total_deposited}")
+    withdrawals = [t[0] for t in transactions if t[0] <= 0]
+    total_withdrawn = sum(withdrawals)
+    print(f"Total withdrawn: {total_withdrawn}")
+    balance = total_deposited + total_withdrawn
+    print(f"Balance: {balance}")
+
+def analyze_transactions(transactions):
+    withdrawals = [t[0] for t in transactions if t[0] <= 0]
+    total_withdrawals = sum(withdrawals)
+    avg_withdrawal = total_withdrawals / len(withdrawals) if withdrawals else 0
+    print(f"Average withdrawal: {avg_withdrawal}")
+    deposits = [t[0] for t in transactions if t[0] >= 0]
+    total_deposits = sum(deposits)
+    avg_deposit = total_deposits / len(deposits) if deposits else 0
+    print(f"Average deposit: {avg_deposit}")
+    transactions.sort()
+    print(f"Largest withdrawal: {transactions[0]}")
+    print(f"Largest deposit: {transactions[-1]}")
   </script>
 
   <script>
     let pyodideReadyPromise = loadPyodide();
 
-    async function runPython(choice) {
+    async function runPython(code) {
       let pyodide = await pyodideReadyPromise;
-      // Load the Python code block once
-      if (!pyodide.globals.get("analyse")) {
+      // Load Python functions once
+      if (!pyodide.globals.get("print_summary")) {
         await pyodide.runPythonAsync(
           document.getElementById("py-code").textContent
         );
       }
-      // Call the Python function
-      let result = pyodide.globals.get("analyse")(choice);
-      document.getElementById("terminal").textContent += 
-        `\n>>> ${choice}\n${result}`;
+      // Capture stdout
+      let output = "";
+      pyodide.setStdout({
+        batched: (s) => { output += s; }
+      });
+      await pyodide.runPythonAsync(code);
+      document.getElementById("terminal").textContent += "\n>>> " + code + "\n" + output;
+    }
+
+    function clearTerminal() {
+      document.getElementById("terminal").textContent = ">>> Ready for input...";
     }
   </script>
 </body>
