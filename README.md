@@ -1,7 +1,9 @@
 # 🌟 Live Demos
 
-Welcome aboard to my live demos! 👉 Explore them here: [musman-uk.github.io/live-demos](https://musman-uk.github.io/live-demos)
+Please feel free to view my live demos here:  
+👉 [Live Demos](https://musman-uk.github.io/live-demos)
 
-If you arrived here by accident, and are looking for my main portfolio instead, you can find it at: [github.com/musman-uk/portfolio](https://github.com/musman-uk/portfolio)
+If you’ve stumbled in here by accident (we can pretend it didn’t happen, or that it was all part of the plan 📋) and were actually looking for my portfolio, you’ll find it here:  
+👉 [Portfolio](https://github.com/musman-uk/portfolio)
 
 Safe journey, and the best of luck with your travels, fellow explorer! 🚀
