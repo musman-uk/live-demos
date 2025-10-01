@@ -5,168 +5,134 @@
   <title>📊 Transaction Analyser</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
+    /* --- Terminal look & feel --- */
     body {
-      background: #111;
-      color: #fff;
+      background: #111; color: #fff;
       font-family: "Courier New", monospace;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
+      margin: 0; height: 100vh; font-size: 0.9em;
     }
     #terminal {
-      border-top: 2px solid #444;
-      background: #000;
-      color: #fff;
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      padding: 10px;
-      box-sizing: border-box;
+      position: relative; background: #000; height: 100vh;
+      padding: 10px; border-top: 2px solid #444; box-sizing: border-box;
     }
-    #header {
-      margin-bottom: 1em;
-    }
+    #header { margin-bottom: 1em; white-space: pre-wrap; }
     #output {
-      flex-grow: 1;
-      white-space: pre-wrap;
-      overflow-y: auto;
+      white-space: pre-wrap; overflow-y: auto;
+      height: calc(100vh - 10px - 10px - 1em - 48px);
+      scrollbar-width: none;
     }
+    #output::-webkit-scrollbar { display: none; }
+    #output::after { content: ""; display: block; height: 64px; } /* cushion */
     #input-line {
-      display: flex;
-      margin-top: 5px;
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 10px; background: #000; border-top: 1px solid #333;
+      display: flex; align-items: center; height: 48px;
     }
-    #prompt {
-      color: #fff;
-      margin-right: 5px;
-    }
+    #prompt { margin-right: 6px; }
     #command {
-      flex: 1;
-      background: #000;
-      border: none;
-      color: #fff;
-      font-family: inherit;
-      font-size: 1em;
-      outline: none;
-    }
-    details {
-      margin-top: 0.5em;
-      color: #aaa;
+      flex: 1; background: #000; border: none; color: #fff;
+      font-family: inherit; font-size: 1em; outline: none;
+      caret-color: #fff;
     }
   </style>
 </head>
 <body>
   <div id="terminal">
     <div id="header">
-      Python 3.15  
-      <details>
-        <summary>Credits</summary>
-        Originally created on Mimo
-      </details>
+Python 3.15.0 (main, Transaction Analyser) [Clang 14.0.0]  
+Type "help", "credits", or "stop" for more information.
     </div>
+
     <div id="output">
 Welcome to Transaction Analyser  
 
-Choose an option  
-
+Options:  
 1. Print summary (type 'print')  
-
 2. Analyse transactions (type 'analyse')  
-
 3. Stop program (type 'stop')  
     </div>
+
     <div id="input-line">
-      <span id="prompt">>>> </span>
+      <span id="prompt">console >>> </span>
       <input id="command" type="text" placeholder="Enter your option:" autofocus />
     </div>
   </div>
 
-  <!-- Python code -->
+  <!-- Python logic -->
   <script type="text/python" id="py-code">
 data = [
-  (749.17, "Investment Return"),
-  (-11.54, "Utilities"),
-  (-247.58, "Online Shopping"),
-  (981.17, "Investment Return"),
-  (-410.65, "Rent"),
-  (310.60, "Rent"),
-  (563.70, "Gift"),
-  (220.79, "Salary"),
-  (-49.85, "Car Maintenance"),
-  (308.49, "Salary"),
-  (-205.55, "Car Maintenance"),
-  (870.64, "Salary"),
-  (-881.51, "Utilities"),
-  (518.14, "Salary"),
-  (-264.66, "Groceries")
+  (749.17, "Investment Return"), (-11.54, "Utilities"),
+  (-247.58, "Online Shopping"), (981.17, "Investment Return"),
+  (-410.65, "Rent"), (310.60, "Rent"), (563.70, "Gift"),
+  (220.79, "Salary"), (-49.85, "Car Maintenance"),
+  (308.49, "Salary"), (-205.55, "Car Maintenance"),
+  (870.64, "Salary"), (-881.51, "Utilities"),
+  (518.14, "Salary"), (-264.66, "Groceries")
 ]
 
 def print_summary(transactions):
-    deposits = [t[0] for t in transactions if t[0] >= 0] 
-    total_deposited = sum(deposits)
+    deposits = [t[0] for t in transactions if t[0] >= 0]
     withdrawals = [t[0] for t in transactions if t[0] <= 0]
-    total_withdrawn = sum(withdrawals)
+    total_deposited, total_withdrawn = sum(deposits), sum(withdrawals)
     balance = total_deposited + total_withdrawn
-    # One line, rounded and spaced
     print("Summary:")
-    print(f"  Total deposited: {total_deposited:.2f}  Total withdrawn: {total_withdrawn:.2f}  Balance: {balance:.2f}")
-    print()
+    print(f"  Deposited: {total_deposited:.2f}  Withdrawn: {total_withdrawn:.2f}  Balance: {balance:.2f}\n")
 
 def analyse_transactions(transactions):
     withdrawals = [t[0] for t in transactions if t[0] <= 0]
-    total_withdrawals = sum(withdrawals)
-    avg_withdrawal = total_withdrawals / len(withdrawals) if withdrawals else 0
-
     deposits = [t[0] for t in transactions if t[0] >= 0]
-    total_deposits = sum(deposits)
-    avg_deposit = total_deposits / len(deposits) if deposits else 0
-
+    avg_withdrawal = sum(withdrawals)/len(withdrawals) if withdrawals else 0
+    avg_deposit = sum(deposits)/len(deposits) if deposits else 0
     transactions.sort()
-    largest_withdrawal = transactions[0]
-    largest_deposit = transactions[-1]
-
-    # One line, rounded and spaced
     print("Transactions:")
-    print(f"  Average withdrawal: {avg_withdrawal:.2f}  Average deposit: {avg_deposit:.2f}  Largest withdrawal: {largest_withdrawal}  Largest deposit: {largest_deposit}")
-    print()
+    print(f"  Avg withdrawal: {avg_withdrawal:.2f}  Avg deposit: {avg_deposit:.2f}")
+    print(f"  Largest withdrawal: {transactions[0]}  Largest deposit: {transactions[-1]}\n")
   </script>
 
   <script>
-    let pyodideReadyPromise = loadPyodide();
+    /* --- Bootstrap Pyodide --- */
     let pyodideInstance = (async () => {
-      let pyodide = await pyodideReadyPromise;
+      let pyodide = await loadPyodide();
       await pyodide.runPythonAsync(document.getElementById("py-code").textContent);
       return pyodide;
     })();
 
+    /* --- Append output and auto-stick --- */
+    function appendAndStick(text) {
+      const out = document.getElementById("output");
+      out.textContent += text;
+      out.scrollTop = out.scrollHeight;
+    }
+
+    /* --- Command handler --- */
     async function runCommand(cmd) {
       let pyodide = await pyodideInstance;
       let output = "";
-      pyodide.setStdout({
-        batched: (s) => { output += s; }
-      });
+      pyodide.setStdout({ batched: s => output += s });
 
       if (cmd === "print") {
         await pyodide.runPythonAsync("print_summary(data)");
       } else if (cmd === "analyse") {
         await pyodide.runPythonAsync("analyse_transactions(data)");
+      } else if (cmd === "credits") {
+        output = "This was originally created on Mimo.";
+      } else if (cmd === "help") {
+        output = "Options: print, analyse, stop";
       } else if (cmd === "stop") {
-        output = "Program stopped.";
+        output = "Program stopped. Data cleared.";
+        await pyodide.runPythonAsync("data.clear()");
       } else {
         output = "Invalid choice";
       }
 
-      const outDiv = document.getElementById("output");
-      outDiv.textContent += `\n>>> ${cmd}\n${output}\n`;
-      outDiv.scrollTop = outDiv.scrollHeight;
+      appendAndStick(`\nconsole >>> ${cmd}\n${output}`);
     }
 
-    document.getElementById("command").addEventListener("keydown", function(e) {
+    /* --- Input listener --- */
+    document.getElementById("command").addEventListener("keydown", e => {
       if (e.key === "Enter") {
-        const cmd = this.value.trim().toLowerCase();
-        this.value = "";
+        const cmd = e.target.value.trim().toLowerCase();
+        e.target.value = "";
         runCommand(cmd);
       }
     });
