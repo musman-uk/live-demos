@@ -41,25 +41,26 @@
       border:1px solid #30363d;
       border-radius:6px;
       padding:0.5rem;
-      font-size:0.75rem;
-      height:400px;       /* fixed block height */
+      font-size:0.7rem;   /* smaller base font */
+      height:360px;       /* fixed compact height */
       display:flex;
       flex-direction:column;
     }
     .panel h2 {
-      margin:0.5rem 0;
+      margin:0.3rem 0;
       color:#9ccfd8;
-      font-size:0.9rem;
+      font-size:0.85rem;
     }
     table {
       border-collapse:collapse;
       width:100%;
-      font-size:0.7rem;
+      font-size:0.65rem;  /* compact font for table */
     }
     th, td {
-      padding:0.3rem;
+      padding:0.25rem;    /* tighter padding */
       text-align:left;
       border-bottom:1px solid #30363d;
+      vertical-align:top;
     }
     th {
       background:#1f2937;
@@ -87,6 +88,7 @@
         height:auto; /* allow natural height on small screens */
         margin-bottom:1rem;
       }
+      table { font-size:0.75rem; }
     }
   </style>
 </head>
