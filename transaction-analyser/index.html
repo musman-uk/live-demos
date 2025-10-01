@@ -67,13 +67,17 @@
       </details>
     </div>
     <div id="output">
+Welcome to Transaction Analyser  
+
 Choose an option  
 
 1. Print summary (type 'print')  
 
 2. Analyse transactions (type 'analyse')  
 
-3. Stop program (type 'stop')  
+3. Print all transactions (type 'list')  
+
+4. Stop program (type 'stop')  
     </div>
     <div id="input-line">
       <span id="prompt">>>> </span>
@@ -100,6 +104,12 @@ data = [
   (518.14, "Salary"),
   (-264.66, "Groceries")
 ]
+
+def print_transactions(transactions): 
+    print("Transactions:")
+    for amount, statement in transactions: 
+        print(f"  {amount:>8}  -  {statement}")
+    print()
 
 def print_summary(transactions):
     deposits = [t[0] for t in transactions if t[0] >= 0] 
@@ -151,6 +161,8 @@ def analyse_transactions(transactions):
         await pyodide.runPythonAsync("print_summary(data)");
       } else if (cmd === "analyse") {
         await pyodide.runPythonAsync("analyse_transactions(data)");
+      } else if (cmd === "list") {
+        await pyodide.runPythonAsync("print_transactions(data)");
       } else if (cmd === "stop") {
         output = "Program stopped.";
       } else {
