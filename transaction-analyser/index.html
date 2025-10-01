@@ -37,6 +37,7 @@
     #input-line {
       display: flex;
       margin-top: 5px;
+      align-items: center;
     }
     #prompt {
       color: #fff;
@@ -50,6 +51,22 @@
       font-family: inherit;
       font-size: 1em;
       outline: none;
+      caret-color: transparent; /* hide default caret */
+      position: relative;
+    }
+    /* Blinking block cursor */
+    #command::after {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 1em;
+      background: #fff;
+      margin-left: 2px;
+      animation: blink 1s steps(1) infinite;
+      vertical-align: bottom;
+    }
+    @keyframes blink {
+      50% { background: transparent; }
     }
     details {
       margin-top: 0.5em;
@@ -109,9 +126,10 @@ def print_summary(transactions):
     withdrawals = [t[0] for t in transactions if t[0] <= 0]
     total_withdrawn = sum(withdrawals)
     balance = total_deposited + total_withdrawn
-    # One line, rounded and spaced
     print("Summary:")
-    print(f"  Total deposited: {total_deposited:.2f}  Total withdrawn: {total_withdrawn:.2f}  Balance: {balance:.2f}")
+    print(f"  Total deposited: {total_deposited:.2f}")
+    print(f"  Total withdrawn: {total_withdrawn:.2f}")
+    print(f"  Balance: {balance:.2f}")
     print()
 
 def analyse_transactions(transactions):
@@ -127,9 +145,11 @@ def analyse_transactions(transactions):
     largest_withdrawal = transactions[0]
     largest_deposit = transactions[-1]
 
-    # One line, rounded and spaced
     print("Analysis:")
-    print(f"  Average withdrawal: {avg_withdrawal:.2f}  Average deposit: {avg_deposit:.2f}  Largest withdrawal: {largest_withdrawal}  Largest deposit: {largest_deposit}")
+    print(f"  Average withdrawal: {avg_withdrawal:.2f}")
+    print(f"  Average deposit: {avg_deposit:.2f}")
+    print(f"  Largest withdrawal: {largest_withdrawal}")
+    print(f"  Largest deposit: {largest_deposit}")
     print()
   </script>
 
