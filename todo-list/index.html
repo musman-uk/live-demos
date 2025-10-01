@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>✅ To Do List</title> <!-- updated emoji -->
+  <title>✅ To Do List</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
     body {
@@ -11,40 +11,50 @@
       font-family: "Courier New", monospace;
       margin: 0;
       padding: 0;
-      display: flex;
-      flex-direction: column;
       height: 100vh;
       font-size: 0.9em; /* smaller font for terminal feel */
     }
     #terminal {
-      border-top: 2px solid #444;
+      position: relative;      /* for absolute input line */
       background: #000;
       color: #fff;
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      padding: 10px;
+      height: 100vh;           /* fill viewport */
       box-sizing: border-box;
+      padding: 10px 10px 52px; /* bottom padding roughly equal to input line height */
+      border-top: 2px solid #444;
+      display: block;
     }
     #header {
       margin-bottom: 1em;
       white-space: pre-wrap;
     }
     #output {
-      flex-grow: 1;
       white-space: pre-wrap;
       overflow-y: auto;
-      font-size: 0.9em;
+      height: calc(100vh - 52px - 10px - 10px - 1em); /* viewport minus input area and padding/header */
+      /* Explanation:
+         - 52px bottom padding/input reserve
+         - 10px top padding
+         - 10px right/left padding not counted in height but kept here for clarity
+         - ~1em for header margin; keeps scrollbar reliable
+      */
+      padding-bottom: 2.5em;   /* prevent last lines hiding behind the fixed input */
     }
     #input-line {
+      position: absolute;      /* pin at bottom */
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px;
+      background: #000;
+      border-top: 1px solid #333;
       display: flex;
-      margin-top: 5px;
       align-items: center;
+      box-sizing: border-box;
     }
     #prompt {
       color: #fff;
-      margin-right: 5px;
+      margin-right: 6px;
     }
     #command {
       flex: 1;
@@ -52,17 +62,18 @@
       border: none;
       color: #fff;
       font-family: inherit;
-      font-size: 0.9em;
+      font-size: 1em;
       outline: none;
-      caret-color: #fff; /* blinking caret */
+      caret-color: #fff; /* blinking caret (native) */
     }
   </style>
 </head>
 <body>
   <div id="terminal">
-    <div id="header" id="py-header">
-      <!-- JS will inject dynamic Python banner here -->
+    <div id="header">
+      <!-- JS injects dynamic Python banner -->
     </div>
+
     <div id="output">
 Welcome to To Do List  
 
@@ -74,6 +85,7 @@ Options:
 
 3. Quit  
     </div>
+
     <div id="input-line">
       <span id="prompt">>>> </span>
       <input id="command" type="text" placeholder="Enter your choice 1, 2, or 3:" autofocus />
@@ -116,18 +128,17 @@ def remove_task():
       return `${dateStr} ${hours}:${minutes}`;
     }
 
-    // Update Python banner
+    // Update Python banner (refresh every minute)
     function updateHeader() {
       const headerDiv = document.getElementById("header");
       headerDiv.textContent =
 `Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]
 Type "help", "copyright", "credits" or "license" for more information.`;
     }
-
-    // Initial header + update every minute
     updateHeader();
     setInterval(updateHeader, 60000);
 
+    // Load Python
     let pyodideReadyPromise = loadPyodide();
     let pyodideInstance = (async () => {
       let pyodide = await pyodideReadyPromise;
@@ -140,26 +151,27 @@ Type "help", "copyright", "credits" or "license" for more information.`;
     async function runCommand(cmd) {
       let pyodide = await pyodideInstance;
       let output = "";
-      pyodide.setStdout({
-        batched: (s) => { output += s; }
-      });
+      pyodide.setStdout({ batched: (s) => { output += s; } });
 
       const outDiv = document.getElementById("output");
+      const inputEl = document.getElementById("command");
 
       if (awaitingTask) {
         await pyodide.runPythonAsync(`add_task(${JSON.stringify(cmd)})`);
         awaitingTask = false;
         outDiv.textContent += `\n>>> ${cmd}\n\n${output}`;
-        document.getElementById("command").placeholder = "Enter your choice 1, 2, or 3:";
+        inputEl.placeholder = "Enter your choice 1, 2, or 3:";
         outDiv.scrollTop = outDiv.scrollHeight;
         return;
       }
 
       if (cmd === "1") {
+        // Add task flow
         output = "Adding task\n\nEnter the task:";
         awaitingTask = true;
-        document.getElementById("command").placeholder = "Type your new task here:";
+        inputEl.placeholder = "Type your new task here:";
       } else if (cmd === "2") {
+        // Remove last task
         output = "Removing task\n\n";
         await pyodide.runPythonAsync("remove_task()");
       } else if (cmd === "3") {
