@@ -2,75 +2,110 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Transaction Analyser Console</title>
+  <title>Transaction Analyzer</title>
+  <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+  <script defer src="https://pyscript.net/latest/pyscript.js"></script>
   <style>
-    body { background:#0d1117; color:#c9d1d9; font-family:monospace; padding:2rem; }
-    .console { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:1rem; max-width:700px; margin:auto; }
-    .line { margin:0.25rem 0; }
+    body {
+      background:#0d1117;
+      color:#c9d1d9;
+      font-family:monospace;
+      padding:1rem;
+      margin:0;
+    }
+    .console {
+      background:#161b22;
+      border:1px solid #30363d;
+      border-radius:6px;
+      padding:1rem;
+      max-width:700px;
+      margin:auto;
+      overflow:auto;
+    }
     .prompt { color:#58a6ff; }
-    input { width:100%; margin-top:1rem; background:#0d1117; border:none; border-bottom:1px solid #58a6ff; color:#c9d1d9; font:inherit; outline:none; }
+    input {
+      width:100%;
+      margin-top:0.5rem;
+      background:#0d1117;
+      border:none;
+      border-bottom:1px solid #58a6ff;
+      color:#c9d1d9;
+      font:inherit;
+      outline:none;
+    }
   </style>
 </head>
 <body>
-  <div class="console" id="console">
-    <div class="line">Python 3.11.5 (default, Sep 2025)</div>
-    <div class="line">Type "help", "credits", or "license" for more information.</div>
-    <div class="line prompt">&gt;&gt;&gt; Welcome to the Transaction Analyzer Console</div>
-    <div class="line">Options: print | analyze | stop</div>
-    <input id="input" placeholder=">>> Enter choice or command">
+  <div class="console">
+    <div>>> Transaction Analyzer Console</div>
+    <div>1. Print summary</div>
+    <div>2. Analyze transactions</div>
+    <div>3. Add a transaction</div>
+    <div>4. Stop program</div>
+    <input id="choice" placeholder=">>> Enter option number">
+    <pre id="output"></pre>
   </div>
 
-  <script>
-    const input = document.getElementById('input');
-    const consoleDiv = document.getElementById('console');
-    const data = [
-      [749.17,"Investment Return"],[-11.54,"Utilities"],[-247.58,"Online Shopping"],
-      [981.17,"Investment Return"],[-410.65,"Rent"],[310.60,"Rent"],[563.70,"Gift"],
-      [220.79,"Salary"],[-49.85,"Car Maintenance"],[308.49,"Salary"],[-205.55,"Car Maintenance"],
-      [870.64,"Salary"],[-881.51,"Utilities"],[518.14,"Salary"],[-264.66,"Groceries"]
-    ];
+  <py-script>
+data = [
+  (749.17, "Investment Return"),
+  (-11.54, "Utilities"),
+  (-247.58, "Online Shopping"),
+  (981.17, "Investment Return"),
+  (-410.65, "Rent"),
+  (310.60, "Rent"),
+  (563.70, "Gift"),
+  (220.79, "Salary"),
+  (-49.85, "Car Maintenance"),
+  (308.49, "Salary"),
+  (-205.55, "Car Maintenance"),
+  (870.64, "Salary"),
+  (-881.51, "Utilities"),
+  (518.14, "Salary"),
+  (-264.66, "Groceries")
+]
 
-    function printLine(text, cls="line") {
-      const div=document.createElement('div'); div.className=cls; div.textContent=text;
-      consoleDiv.insertBefore(div,input); consoleDiv.scrollTop=consoleDiv.scrollHeight;
-    }
+from js import document
 
-    function summary() {
-      const deposits=data.filter(d=>d[0]>=0).map(d=>d[0]);
-      const withdrawals=data.filter(d=>d[0]<=0).map(d=>d[0]);
-      printLine("Total deposited: "+deposits.reduce((a,b)=>a+b,0).toFixed(2));
-      printLine("Total withdrawn: "+withdrawals.reduce((a,b)=>a+b,0).toFixed(2));
-      printLine("Balance: "+(deposits.reduce((a,b)=>a+b,0)+withdrawals.reduce((a,b)=>a+b,0)).toFixed(2));
-    }
+def print_summary():
+    deposits = [amt for amt, _ in data if amt >= 0]
+    withdrawals = [amt for amt, _ in data if amt < 0]
+    return (f"Total deposited: {sum(deposits):.2f}\n"
+            f"Total withdrawn: {sum(withdrawals):.2f}\n"
+            f"Balance: {sum(deposits)+sum(withdrawals):.2f}")
 
-    function analyze() {
-      const w=data.filter(d=>d[0]<=0).map(d=>d[0]), d=data.filter(d=>d[0]>=0).map(d=>d[0]);
-      const avg=(arr)=>arr.length? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2):0;
-      printLine("Average withdrawal: "+avg(w));
-      printLine("Average deposit: "+avg(d));
-      const sorted=[...data].sort((a,b)=>a[0]-b[0]);
-      printLine("Largest withdrawal: "+sorted[0]);
-      printLine("Largest deposit: "+sorted[sorted.length-1]);
-    }
+def analyze_transactions():
+    deposits = [amt for amt, _ in data if amt >= 0]
+    withdrawals = [amt for amt, _ in data if amt < 0]
+    avg = lambda arr: sum(arr)/len(arr) if arr else 0
+    return (f"Average deposit: {avg(deposits):.2f}\n"
+            f"Average withdrawal: {avg(withdrawals):.2f}\n"
+            f"Largest deposit: {max(deposits) if deposits else 0}\n"
+            f"Largest withdrawal: {min(withdrawals) if withdrawals else 0}")
 
-    const commands={
-      "print":summary,
-      "analyze":analyze,
-      "stop":()=>{printLine("Exiting..."); input.disabled=true;},
-      "help":()=>["print=Summary","analyze=Details","stop=Exit","clear=Reset","credits","license","version"].forEach(x=>printLine(x)),
-      "clear":()=>{[...consoleDiv.querySelectorAll('.line,.prompt')].forEach(el=>el.remove()); printLine("Console cleared.");},
-      "credits":()=>printLine("Original exercise sourced via Mimo and extended for interactivity."),
-      "license":()=>printLine("MIT License. Use freely with attribution."),
-      "version":()=>printLine("Python 3.11.5")
-    };
+def add_transaction():
+    amt = float(input("Enter amount (positive=deposit, negative=withdrawal): "))
+    desc = input("Enter description: ")
+    data.append((amt, desc))
+    return "Transaction added."
 
-    input.addEventListener('keydown',e=>{
-      if(e.key==="Enter" && !input.disabled){
-        let cmd=input.value.trim().toLowerCase(); input.value="";
-        printLine(">>> "+cmd,"prompt");
-        (commands[cmd]||(()=>printLine("Invalid choice. Type help.")))();
-      }
-    });
-  </script>
+def handle_choice(event):
+    choice = document.getElementById("choice").value.strip()
+    out = ""
+    if choice == "1":
+        out = print_summary()
+    elif choice == "2":
+        out = analyze_transactions()
+    elif choice == "3":
+        out = add_transaction()
+    elif choice == "4":
+        out = "Exiting program..."
+    else:
+        out = "Invalid choice."
+    document.getElementById("output").textContent = out
+    document.getElementById("choice").value = ""
+
+document.getElementById("choice").addEventListener("change", handle_choice)
+  </py-script>
 </body>
 </html>
