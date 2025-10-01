@@ -2,141 +2,173 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Transaction Analyzer</title>
+  <title>To Do List</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
     body {
-      margin:0;
-      background:#000;
-      color:#fff;
-      font-family:monospace;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
+      background: #111;
+      color: #fff;
+      font-family: "Courier New", monospace;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
-    .console {
-      background:#000;
-      border:1px solid #444;
-      width:95%;
-      max-width:800px;
-      height:90vh;
-      display:flex;
-      flex-direction:column;
-      padding:0.5rem;
-      box-sizing:border-box;
+    #terminal {
+      border-top: 2px solid #444;
+      background: #000;
+      color: #fff;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    #header {
+      margin-bottom: 1em;
     }
     #output {
-      flex:1;
-      overflow-y:auto;
-      white-space:pre-wrap;
-      font-size:0.95rem;
+      flex-grow: 1;
+      white-space: pre-wrap;
+      overflow-y: auto;
+    }
+    #input-line {
+      display: flex;
+      margin-top: 5px;
+      align-items: center;
     }
     #prompt {
-      display:flex;
-      align-items:center;
-      border-top:1px solid #444;
-      padding-top:0.25rem;
+      color: #fff;
+      margin-right: 5px;
     }
-    #prompt span { margin-right:0.5rem; }
-    #choice {
-      flex:1;
-      background:#000;
-      border:none;
-      color:#fff;
-      font:inherit;
-      outline:none;
+    #command {
+      flex: 1;
+      background: #000;
+      border: none;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1em;
+      outline: none;
+      caret-color: transparent; /* hide default caret */
+      position: relative;
     }
-    @media (max-width:600px) {
-      .console { height:80vh; font-size:0.85rem; }
+    /* Blinking block cursor */
+    #command::after {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 1em;
+      background: #fff;
+      margin-left: 2px;
+      vertical-align: bottom;
+      animation: blink 1s steps(1) infinite;
+    }
+    @keyframes blink {
+      50% { background: transparent; }
+    }
+    details {
+      margin-top: 0.5em;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
-  <div class="console">
-    <div id="output">
-Python 3.11 (Pyodide)
-Transaction Analyzer ready.
-Options:
-1. Print summary
-2. Analyze transactions
-3. Add a transaction
-4. Stop program
-
+  <div id="terminal">
+    <div id="header">
+      Python 3.15  
+      <details>
+        <summary>Credits</summary>
+        Originally created on Mimo
+      </details>
     </div>
-    <div id="prompt"><span>>> </span><input id="choice" placeholder="Enter option number"></div>
+    <div id="output">
+Welcome to To Do List  
+
+Your To Do List is empty  
+
+Options:  
+1. Add Task  
+2. Remove Task  
+3. Quit  
+    </div>
+    <div id="input-line">
+      <span id="prompt">>>> </span>
+      <input id="command" type="text" placeholder="Enter your choice 1, 2, or 3:" autofocus />
+    </div>
   </div>
 
+  <!-- Python code -->
+  <script type="text/python" id="py-code">
+todo_list = []
+
+def show_list():
+    if len(todo_list) == 0:
+        print("Your To Do List is empty")
+    else:
+        index = 1
+        for task in todo_list:
+            print(f"{index}. {task}")
+            index += 1
+    print()
+
+def add_task(task):
+    todo_list.append(task)
+    print(f"Task '{task}' added to the To Do List")
+    print()
+
+def remove_task():
+    if len(todo_list) > 0:
+        removed_task = todo_list.pop()
+        print(f"Task '{removed_task}' removed from the To Do List")
+    else:
+        print("Your To Do List is empty")
+    print()
+  </script>
+
   <script>
-    let pyodide;
+    let pyodideReadyPromise = loadPyodide();
+    let pyodideInstance = (async () => {
+      let pyodide = await pyodideReadyPromise;
+      await pyodide.runPythonAsync(document.getElementById("py-code").textContent);
+      return pyodide;
+    })();
 
-    async function main() {
-      pyodide = await loadPyodide();
-      await pyodide.runPythonAsync(`
-data = [
-    (749.17, "Investment Return"), (-11.54, "Utilities"), (-247.58, "Online Shopping"),
-    (981.17, "Investment Return"), (-410.65, "Rent"), (310.60, "Rent"), (563.70, "Gift"),
-    (220.79, "Salary"), (-49.85, "Car Maintenance"), (308.49, "Salary"),
-    (-205.55, "Car Maintenance"), (870.64, "Salary"), (-881.51, "Utilities"),
-    (518.14, "Salary"), (-264.66, "Groceries")
-]
+    async function runCommand(cmd) {
+      let pyodide = await pyodideInstance;
+      let output = "";
+      pyodide.setStdout({
+        batched: (s) => { output += s; }
+      });
 
-def print_summary():
-    deposits = [amt for amt,_ in data if amt>=0]
-    withdrawals = [amt for amt,_ in data if amt<0]
-    return (f"Total deposited: {sum(deposits):.2f}\\n"
-            f"Total withdrawn: {sum(withdrawals):.2f}\\n"
-            f"Balance: {sum(deposits)+sum(withdrawals):.2f}")
-
-def analyze_transactions():
-    deposits = [amt for amt,_ in data if amt>=0]
-    withdrawals = [amt for amt,_ in data if amt<0]
-    avg = lambda arr: sum(arr)/len(arr) if arr else 0
-    return (f"Average deposit: {avg(deposits):.2f}\\n"
-            f"Average withdrawal: {avg(withdrawals):.2f}\\n"
-            f"Largest deposit: {max(deposits) if deposits else 0}\\n"
-            f"Largest withdrawal: {min(withdrawals) if withdrawals else 0}")
-
-def add_transaction():
-    # In browser, we can't use input(), so JS will pass values
-    return "Use JS prompt to add transaction"
-      `);
-    }
-
-    function appendOutput(text) {
-      const out = document.getElementById("output");
-      out.textContent += text + "\\n";
-      out.scrollTop = out.scrollHeight;
-    }
-
-    document.getElementById("choice").addEventListener("keydown", async e => {
-      if (e.key === "Enter") {
-        const choice = e.target.value.trim();
-        let result = "";
-        if (choice === "1") {
-          result = await pyodide.runPythonAsync("print_summary()");
-        } else if (choice === "2") {
-          result = await pyodide.runPythonAsync("analyze_transactions()");
-        } else if (choice === "3") {
-          const amt = parseFloat(prompt("Enter amount (positive=deposit, negative=withdrawal):"));
-          const desc = prompt("Enter description:");
-          if (!isNaN(amt) && desc) {
-            await pyodide.runPythonAsync(\`data.append((${amt}, "${desc}"))\`);
-            result = "Transaction added.";
-          } else {
-            result = "Invalid input.";
-          }
-        } else if (choice === "4") {
-          result = "Exiting program...";
-        } else {
-          result = "Invalid choice.";
+      if (cmd === "1") {
+        output = "Adding task\n";
+        const newTask = prompt("Enter the task:");
+        if (newTask) {
+          await pyodide.runPythonAsync(`add_task(${JSON.stringify(newTask)})`);
         }
-        appendOutput(\`>>> \${choice}\\n\${result}\`);
-        e.target.value = "";
+      } else if (cmd === "2") {
+        output = "Removing task\n";
+        await pyodide.runPythonAsync("remove_task()");
+      } else if (cmd === "3") {
+        output = "Quitting";
+      } else {
+        output = "Invalid choice";
+      }
+
+      const outDiv = document.getElementById("output");
+      outDiv.textContent += `\n>>> ${cmd}\n${output}`;
+      outDiv.scrollTop = outDiv.scrollHeight;
+    }
+
+    document.getElementById("command").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        const cmd = this.value.trim();
+        this.value = "";
+        runCommand(cmd);
       }
     });
-
-    main();
   </script>
 </body>
 </html>
