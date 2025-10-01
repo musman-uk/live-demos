@@ -5,75 +5,48 @@
   <title>✅ To Do List</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
+    /* --- Global terminal look --- */
     body {
       background: #111;
       color: #fff;
       font-family: "Courier New", monospace;
       margin: 0;
-      padding: 0;
       height: 100vh;
-      font-size: 0.9em; /* smaller font for terminal feel */
+      font-size: 0.9em; /* smaller font for realism */
     }
     #terminal {
       position: relative;
       background: #000;
-      color: #fff;
       height: 100vh;
-      box-sizing: border-box;
       padding: 10px;
       border-top: 2px solid #444;
+      box-sizing: border-box;
     }
-    #header {
-      margin-bottom: 1em;
-      white-space: pre-wrap;
-    }
+    #header { margin-bottom: 1em; white-space: pre-wrap; }
     #output {
       white-space: pre-wrap;
       overflow-y: auto;
       height: calc(100vh - 10px - 10px - 1em - 48px);
-      scrollbar-width: none; /* Firefox */
+      scrollbar-width: none;
     }
-    #output::-webkit-scrollbar {
-      display: none; /* WebKit */
-    }
-    #output::after {
-      content: "";
-      display: block;
-      height: 64px; /* cushion so last lines never hide under input */
-    }
+    #output::-webkit-scrollbar { display: none; }
+    #output::after { content: ""; display: block; height: 64px; } /* cushion */
     #input-line {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      padding: 10px;
-      background: #000;
-      border-top: 1px solid #333;
-      display: flex;
-      align-items: center;
-      box-sizing: border-box;
-      height: 48px;
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 10px; background: #000; border-top: 1px solid #333;
+      display: flex; align-items: center; height: 48px;
     }
-    #prompt {
-      color: #fff;
-      margin-right: 6px;
-    }
+    #prompt { margin-right: 6px; }
     #command {
-      flex: 1;
-      background: #000;
-      border: none;
-      color: #fff;
-      font-family: inherit;
-      font-size: 1em;
-      outline: none;
-      caret-color: #fff; /* native blinking caret */
+      flex: 1; background: #000; border: none; color: #fff;
+      font-family: inherit; font-size: 1em; outline: none;
+      caret-color: #fff; /* blinking caret */
     }
   </style>
 </head>
 <body>
   <div id="terminal">
     <div id="header"></div>
-
     <div id="output">
 Welcome to To Do List  
 
@@ -85,23 +58,20 @@ Options:
 
 3. Quit  
     </div>
-
     <div id="input-line">
       <span id="prompt">>>> </span>
       <input id="command" type="text" placeholder="Enter your choice 1, 2, or 3:" autofocus />
     </div>
   </div>
 
-  <!-- Python code -->
+  <!-- Python logic for tasks -->
   <script type="text/python" id="py-code">
 todo_list = []
 
 def show_list():
-    if len(todo_list) > 0:
-        index = 1
-        for task in todo_list:
-            print(f"{index}. {task}")
-            index += 1
+    if todo_list:
+        for i, task in enumerate(todo_list, 1):
+            print(f"{i}. {task}")
     print()
 
 def add_task(task):
@@ -110,55 +80,48 @@ def add_task(task):
     print()
 
 def remove_task():
-    if len(todo_list) > 0:
-        removed_task = todo_list.pop()
-        print(f"Task '{removed_task}' removed from the To Do List")
+    if todo_list:
+        removed = todo_list.pop()
+        print(f"Task '{removed}' removed from the To Do List")
     else:
         print("Your To Do List is empty")
     print()
   </script>
 
   <script>
-    // Format date without seconds
+    /* --- Dynamic Python banner --- */
     function formatDate() {
       const now = new Date();
-      const dateStr = now.toDateString();
-      const hours = now.getHours().toString().padStart(2, "0");
-      const minutes = now.getMinutes().toString().padStart(2, "0");
-      return `${dateStr} ${hours}:${minutes}`;
+      return `${now.toDateString()} ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
     }
-
-    // Update Python banner
     function updateHeader() {
-      const headerDiv = document.getElementById("header");
-      headerDiv.textContent =
+      document.getElementById("header").textContent =
 `Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]
 Type "help", "copyright", "credits" or "license" for more information.`;
     }
-    updateHeader();
-    setInterval(updateHeader, 60000);
+    updateHeader(); setInterval(updateHeader, 60000);
 
-    // Load Python
-    let pyodideReadyPromise = loadPyodide();
+    /* --- Pyodide bootstrap --- */
     let pyodideInstance = (async () => {
-      let pyodide = await pyodideReadyPromise;
+      let pyodide = await loadPyodide();
       await pyodide.runPythonAsync(document.getElementById("py-code").textContent);
       return pyodide;
     })();
 
     let awaitingTask = false;
 
+    /* --- Append output and auto-stick to bottom --- */
     function appendAndStick(text) {
-      const outDiv = document.getElementById("output");
-      outDiv.textContent += text;
-      outDiv.scrollTop = outDiv.scrollHeight;
+      const out = document.getElementById("output");
+      out.textContent += text;
+      out.scrollTop = out.scrollHeight;
     }
 
+    /* --- Command handler --- */
     async function runCommand(cmd) {
       let pyodide = await pyodideInstance;
       let output = "";
-      pyodide.setStdout({ batched: (s) => { output += s; } });
-
+      pyodide.setStdout({ batched: s => output += s });
       const inputEl = document.getElementById("command");
 
       if (awaitingTask) {
@@ -194,10 +157,11 @@ Type "help", "copyright", "credits" or "license" for more information.`;
       appendAndStick(`\n>>> ${cmd}\n\n${output}`);
     }
 
-    document.getElementById("command").addEventListener("keydown", function(e) {
+    /* --- Input listener --- */
+    document.getElementById("command").addEventListener("keydown", e => {
       if (e.key === "Enter") {
-        const cmd = this.value.trim();
-        this.value = "";
+        const cmd = e.target.value.trim();
+        e.target.value = "";
         runCommand(cmd);
       }
     });
