@@ -8,8 +8,8 @@
   <style>
     body {
       margin:0;
-      background:#0d1117;
-      color:#c9d1d9;
+      background:#000;
+      color:#eee;
       font-family:monospace;
       display:flex;
       justify-content:center;
@@ -17,9 +17,8 @@
       height:100vh;
     }
     .console {
-      background:#161b22;
-      border:1px solid #30363d;
-      border-radius:6px;
+      background:#000;
+      border:1px solid #444;
       width:95%;
       max-width:800px;
       height:90vh;
@@ -37,17 +36,15 @@
       display:flex;
       align-items:center;
     }
-    #prompt span { color:#58a6ff; margin-right:0.5rem; }
+    #prompt span { margin-right:0.5rem; }
     #choice {
       flex:1;
-      background:#0d1117;
+      background:#000;
       border:none;
-      border-bottom:1px solid #58a6ff;
-      color:#c9d1d9;
+      color:#eee;
       font:inherit;
       outline:none;
     }
-    /* Responsive tweaks */
     @media (max-width:600px) {
       .console { height:80vh; font-size:0.9rem; }
     }
@@ -55,19 +52,29 @@
 </head>
 <body>
   <div class="console">
-    <div id="output">Python 3.11.5 (PyScript)\nTransaction Analyzer ready.\nOptions:\n1. Print summary\n2. Analyze transactions\n3. Add a transaction\n4. Stop program\n</div>
+    <div id="output">
+Python 3.11.5 (PyScript)
+Transaction Analyzer ready.
+Options:
+1. Print summary
+2. Analyze transactions
+3. Add a transaction
+4. Stop program
+
+    </div>
     <div id="prompt"><span>>> </span><input id="choice" placeholder="Enter option number"></div>
   </div>
 
   <py-script>
 from js import document
 
+# Keep data internal, not printed in HTML
 data = [
-  (749.17, "Investment Return"), (-11.54, "Utilities"), (-247.58, "Online Shopping"),
-  (981.17, "Investment Return"), (-410.65, "Rent"), (310.60, "Rent"), (563.70, "Gift"),
-  (220.79, "Salary"), (-49.85, "Car Maintenance"), (308.49, "Salary"),
-  (-205.55, "Car Maintenance"), (870.64, "Salary"), (-881.51, "Utilities"),
-  (518.14, "Salary"), (-264.66, "Groceries")
+    (749.17, "Investment Return"), (-11.54, "Utilities"), (-247.58, "Online Shopping"),
+    (981.17, "Investment Return"), (-410.65, "Rent"), (310.60, "Rent"), (563.70, "Gift"),
+    (220.79, "Salary"), (-49.85, "Car Maintenance"), (308.49, "Salary"),
+    (-205.55, "Car Maintenance"), (870.64, "Salary"), (-881.51, "Utilities"),
+    (518.14, "Salary"), (-264.66, "Groceries")
 ]
 
 def print_summary():
@@ -97,7 +104,6 @@ def add_transaction():
 
 def handle_choice(event):
     choice = document.getElementById("choice").value.strip()
-    out = ""
     if choice == "1":
         out = print_summary()
     elif choice == "2":
