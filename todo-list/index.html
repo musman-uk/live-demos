@@ -20,28 +20,34 @@
       color: #fff;
       height: 100vh;           /* fill viewport */
       box-sizing: border-box;
-      padding: 10px 10px 52px; /* bottom padding roughly equal to input line height */
+      padding: 10px;           /* no bottom padding; we’ll add a virtual cushion inside #output */
       border-top: 2px solid #444;
-      display: block;
     }
     #header {
       margin-bottom: 1em;
       white-space: pre-wrap;
     }
+    /* Output area: hidden scrollbar, auto-scroll via JS, and an invisible cushion at the end */
     #output {
       white-space: pre-wrap;
       overflow-y: auto;
-      height: calc(100vh - 52px - 10px - 10px - 1em); /* viewport minus input area and padding/header */
-      /* Explanation:
-         - 52px bottom padding/input reserve
-         - 10px top padding
-         - 10px right/left padding not counted in height but kept here for clarity
-         - ~1em for header margin; keeps scrollbar reliable
-      */
-      padding-bottom: 2.5em;   /* prevent last lines hiding behind the fixed input */
+      height: calc(100vh - 10px - 10px - 1em - 48px);
+      /* 10px top padding, 10px bottom padding, ~1em header margin, 48px input-line height */
+      scrollbar-width: none; /* Firefox: hide scrollbar */
     }
+    #output::-webkit-scrollbar {
+      display: none; /* WebKit: hide scrollbar */
+    }
+    /* Invisible cushion so the last printed line never sits under the input bar */
+    #output::after {
+      content: "";
+      display: block;
+      height: 64px; /* slightly larger than input bar to create breathing room */
+    }
+
+    /* Input line pinned at bottom */
     #input-line {
-      position: absolute;      /* pin at bottom */
+      position: absolute;
       left: 0;
       right: 0;
       bottom: 0;
@@ -51,6 +57,7 @@
       display: flex;
       align-items: center;
       box-sizing: border-box;
+      height: 48px; /* used by #output height calc */
     }
     #prompt {
       color: #fff;
@@ -64,7 +71,7 @@
       font-family: inherit;
       font-size: 1em;
       outline: none;
-      caret-color: #fff; /* blinking caret (native) */
+      caret-color: #fff; /* native blinking caret */
     }
   </style>
 </head>
@@ -148,20 +155,25 @@ Type "help", "copyright", "credits" or "license" for more information.`;
 
     let awaitingTask = false;
 
+    function appendAndStick(text) {
+      const outDiv = document.getElementById("output");
+      outDiv.textContent += text;
+      // Auto-stick to bottom without showing a scrollbar
+      outDiv.scrollTop = outDiv.scrollHeight;
+    }
+
     async function runCommand(cmd) {
       let pyodide = await pyodideInstance;
       let output = "";
       pyodide.setStdout({ batched: (s) => { output += s; } });
 
-      const outDiv = document.getElementById("output");
       const inputEl = document.getElementById("command");
 
       if (awaitingTask) {
         await pyodide.runPythonAsync(`add_task(${JSON.stringify(cmd)})`);
         awaitingTask = false;
-        outDiv.textContent += `\n>>> ${cmd}\n\n${output}`;
+        appendAndStick(`\n>>> ${cmd}\n\n${output}`);
         inputEl.placeholder = "Enter your choice 1, 2, or 3:";
-        outDiv.scrollTop = outDiv.scrollHeight;
         return;
       }
 
@@ -188,8 +200,7 @@ Type "help", "copyright", "credits" or "license" for more information.`;
         output = "Invalid choice";
       }
 
-      outDiv.textContent += `\n>>> ${cmd}\n\n${output}`;
-      outDiv.scrollTop = outDiv.scrollHeight;
+      appendAndStick(`\n>>> ${cmd}\n\n${output}`);
     }
 
     document.getElementById("command").addEventListener("keydown", function(e) {
