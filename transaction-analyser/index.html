@@ -1,5 +1,61 @@
-<div class="console">
-  <div id="output">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Transaction Analyzer</title>
+  <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+  <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+  <style>
+    body {
+      margin:0;
+      background:#000;          /* black background */
+      color:#fff;               /* white text */
+      font-family:monospace;    /* terminal font */
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+    }
+    .console {
+      background:#000;
+      border:1px solid #444;
+      width:95%;
+      max-width:800px;
+      height:90vh;
+      display:flex;
+      flex-direction:column;
+      padding:0.5rem;
+      box-sizing:border-box;
+    }
+    #output {
+      flex:1;
+      overflow-y:auto;
+      white-space:pre-wrap;
+      font-size:0.95rem;
+    }
+    #prompt {
+      display:flex;
+      align-items:center;
+      border-top:1px solid #444;
+      padding-top:0.25rem;
+    }
+    #prompt span { margin-right:0.5rem; }
+    #choice {
+      flex:1;
+      background:#000;
+      border:none;
+      color:#fff;
+      font:inherit;
+      outline:none;
+    }
+    @media (max-width:600px) {
+      .console { height:80vh; font-size:0.85rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="console">
+    <div id="output">
 Python 3.11.5 (PyScript)
 Transaction Analyzer ready.
 Options:
@@ -8,14 +64,14 @@ Options:
 3. Add a transaction
 4. Stop program
 
+    </div>
+    <div id="prompt"><span>>> </span><input id="choice" placeholder="Enter option number"></div>
   </div>
-  <div id="prompt"><span>>> </span><input id="choice" placeholder="Enter option number"></div>
-</div>
 
-<py-script>
+  <py-script>
 from js import document
 
-# Internal data (not printed automatically)
+# Internal data (not shown until user requests)
 data = [
     (749.17, "Investment Return"), (-11.54, "Utilities"), (-247.58, "Online Shopping"),
     (981.17, "Investment Return"), (-410.65, "Rent"), (310.60, "Rent"), (563.70, "Gift"),
@@ -66,6 +122,7 @@ def handle_choice(event):
     output.scrollTop = output.scrollHeight
     document.getElementById("choice").value = ""
 
-# Attach listener
 document.getElementById("choice").addEventListener("change", handle_choice)
-</py-script>
+  </py-script>
+</body>
+</html>
