@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Transaction Analyzer</title>
+  <title>Transaction Analyser</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
     body {
       margin:0;
       background:#000;
       color:#fff;
-      font-family:Consolas, "Courier New", monospace; /* terminal font */
+      font-family:Consolas, "Courier New", monospace;
     }
     .console {
       background:#000;
@@ -24,7 +24,7 @@
       flex:1;
       overflow-y:auto;
       white-space:pre-wrap;
-      text-align:left; /* left aligned like a terminal */
+      text-align:left;
       font-size:0.95rem;
     }
     #prompt {
@@ -42,9 +42,6 @@
       font:inherit;
       outline:none;
     }
-    @media (max-width:600px) {
-      #output { font-size:0.85rem; }
-    }
   </style>
 </head>
 <body>
@@ -59,13 +56,14 @@ Options:
 4. Stop program
 
     </div>
-    <div id="prompt"><span>>> </span><input id="choice" placeholder="Enter option number"></div>
+    <div id="prompt"><span>>> </span><input id="choice" autofocus></div>
   </div>
 
   <script>
+    let pyodideReady = false;
     let pyodide;
 
-    async function main() {
+    async function initPyodide() {
       pyodide = await loadPyodide();
       await pyodide.runPythonAsync(`
 data = [
@@ -83,7 +81,7 @@ def print_summary():
             f"Total withdrawn: {sum(withdrawals):.2f}\\n"
             f"Balance: {sum(deposits)+sum(withdrawals):.2f}")
 
-def analyze_transactions():
+def analyse_transactions():
     deposits = [amt for amt,_ in data if amt>=0]
     withdrawals = [amt for amt,_ in data if amt<0]
     avg = lambda arr: sum(arr)/len(arr) if arr else 0
@@ -92,6 +90,7 @@ def analyze_transactions():
             f"Largest deposit: {max(deposits) if deposits else 0}\\n"
             f"Largest withdrawal: {min(withdrawals) if withdrawals else 0}")
       `);
+      pyodideReady = true;
     }
 
     function appendOutput(text) {
@@ -101,13 +100,13 @@ def analyze_transactions():
     }
 
     document.getElementById("choice").addEventListener("keydown", async e => {
-      if (e.key === "Enter") {
+      if (e.key === "Enter" && pyodideReady) {
         const choice = e.target.value.trim();
         let result = "";
         if (choice === "1") {
           result = await pyodide.runPythonAsync("print_summary()");
         } else if (choice === "2") {
-          result = await pyodide.runPythonAsync("analyze_transactions()");
+          result = await pyodide.runPythonAsync("analyse_transactions()");
         } else if (choice === "3") {
           const amt = parseFloat(prompt("Enter amount (positive=deposit, negative=withdrawal):"));
           const desc = prompt("Enter description:");
@@ -127,7 +126,7 @@ def analyze_transactions():
       }
     });
 
-    main();
+    initPyodide();
   </script>
 </body>
 </html>
