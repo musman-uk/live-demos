@@ -9,7 +9,7 @@
       margin:0;
       background:#000;
       color:#fff;
-      font-family:Consolas, "Courier New", monospace; /* terminal font */
+      font-family:Consolas, "Courier New", monospace;
     }
     .console {
       background:#000;
@@ -24,7 +24,7 @@
       flex:1;
       overflow-y:auto;
       white-space:pre-wrap;
-      text-align:left; /* left aligned like a terminal */
+      text-align:left;
       font-size:0.95rem;
     }
     #prompt {
@@ -42,16 +42,13 @@
       font:inherit;
       outline:none;
     }
-    @media (max-width:600px) {
-      #output { font-size:0.85rem; }
-    }
   </style>
 </head>
 <body>
   <div class="console">
     <div id="output">
 Python 3.11 (Pyodide)
-Transaction Analyzer
+Transaction Analyzer ready.
 Options:
 1. Print summary
 2. Analyze transactions
@@ -59,13 +56,14 @@ Options:
 4. Stop program
 
     </div>
-    <div id="prompt"><span>>> </span><input id="choice" placeholder="Enter option number"></div>
+    <div id="prompt"><span>>> </span><input id="choice" autofocus></div>
   </div>
 
   <script>
+    let pyodideReady = false;
     let pyodide;
 
-    async function main() {
+    async function initPyodide() {
       pyodide = await loadPyodide();
       await pyodide.runPythonAsync(`
 data = [
@@ -92,6 +90,7 @@ def analyze_transactions():
             f"Largest deposit: {max(deposits) if deposits else 0}\\n"
             f"Largest withdrawal: {min(withdrawals) if withdrawals else 0}")
       `);
+      pyodideReady = true;
     }
 
     function appendOutput(text) {
@@ -101,7 +100,7 @@ def analyze_transactions():
     }
 
     document.getElementById("choice").addEventListener("keydown", async e => {
-      if (e.key === "Enter") {
+      if (e.key === "Enter" && pyodideReady) {
         const choice = e.target.value.trim();
         let result = "";
         if (choice === "1") {
@@ -127,7 +126,7 @@ def analyze_transactions():
       }
     });
 
-    main();
+    initPyodide();
   </script>
 </body>
 </html>
