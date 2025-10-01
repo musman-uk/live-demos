@@ -26,31 +26,39 @@
       max-width:600px;
       line-height:1.5;
     }
-    h2 {
-      margin:1rem 0;
-      color:#9ccfd8;
-      align-self:flex-start;
-    }
-    .table-container {
+    .content {
       display:flex;
-      justify-content:flex-start;
+      justify-content:space-between;
       width:100%;
+      max-width:1200px;
+      margin-top:1rem;
     }
-    .table-wrapper {
-      flex:0 0 25%;          /* quarter width */
-      max-width:320px;
+    .panel {
+      flex:0 0 25%;       /* quarter width */
+      max-width:300px;
       min-width:260px;
+      background:#161b22;
+      border:1px solid #30363d;
+      border-radius:6px;
+      padding:0.5rem;
+      font-size:0.75rem;
+      height:400px;       /* fixed block height */
+      overflow:hidden;    /* no scrolling, compact block */
+      display:flex;
+      flex-direction:column;
+    }
+    .panel h2 {
+      margin:0.5rem 0;
+      color:#9ccfd8;
+      font-size:0.9rem;
     }
     table {
       border-collapse:collapse;
       width:100%;
-      background:#161b22;
-      border:1px solid #30363d;
-      border-radius:6px;
-      font-size:0.7rem;      /* smaller font for compactness */
+      font-size:0.7rem;
     }
     th, td {
-      padding:0.4rem;
+      padding:0.3rem;
       text-align:left;
       border-bottom:1px solid #30363d;
     }
@@ -69,12 +77,17 @@
     a:hover {
       text-decoration:underline;
     }
-    @media (max-width:800px) {
-      .table-wrapper {
-        flex:1 1 90%;   /* expand on mobile */
-        max-width:none;
+    @media (max-width:900px) {
+      .content {
+        flex-direction:column;
+        align-items:center;
       }
-      table { font-size:0.8rem; }
+      .panel {
+        flex:1 1 90%;
+        max-width:none;
+        height:auto; /* allow natural height on mobile */
+        margin-bottom:1rem;
+      }
     }
   </style>
 </head>
@@ -84,67 +97,60 @@
     Welcome to the live demos of my projects, here you can explore them and see how they are built. ✨
   </p>
 
-  <h2>Guided Projects</h2>
-  <div class="table-container">
-    <div class="table-wrapper">
+  <div class="content">
+    <!-- Left Panel: Guided Projects -->
+    <div class="panel">
+      <h2>Guided Projects</h2>
       <table>
         <tr>
-          <th>🧩 Project</th>
-          <th>🛠️ Stack</th>
-          <th>📄 Description</th>
-          <th>🌐 Live Demo</th>
-          <th>💻 Source Code</th>
+          <th>Project</th>
+          <th>Stack</th>
+          <th>Demo</th>
         </tr>
         <tr>
           <td>✅ To Do List</td>
           <td>Python</td>
-          <td>Command line task manager.</td>
           <td><a href="todo-list/index.html">Demo</a></td>
-          <td></td>
         </tr>
         <tr>
           <td>📊 Transaction Analyser</td>
           <td>Python</td>
-          <td>Parses transactions and summaries.</td>
           <td><a href="transaction-analyser/index.html">Demo</a></td>
-          <td></td>
         </tr>
         <tr>
           <td>🔄 Unit Converter</td>
           <td>HTML, CSS, JS</td>
-          <td>Metric to imperial converter.</td>
           <td>—</td>
-          <td></td>
         </tr>
         <tr>
           <td>🏆 Score Keeper</td>
-          <td>HTML, CSS, JS, React</td>
-          <td>Interactive scoreboard.</td>
+          <td>HTML, CSS, React</td>
           <td>—</td>
-          <td></td>
         </tr>
         <tr>
           <td>🐾 Pixel Paws</td>
           <td>HTML, CSS, JS</td>
-          <td>Pixel art canvas with pets.</td>
           <td>—</td>
-          <td></td>
         </tr>
         <tr>
           <td>🖼️ Interactive Gallery</td>
           <td>HTML, CSS, JS</td>
-          <td>Responsive gallery with modals.</td>
           <td>—</td>
-          <td></td>
         </tr>
         <tr>
           <td>🔐 Caesar Cipher</td>
           <td>HTML, CSS, JS</td>
-          <td>Encode and decode with Caesar shift.</td>
           <td>—</td>
-          <td></td>
         </tr>
       </table>
+    </div>
+
+    <!-- Right Panel: Independent Projects (placeholder) -->
+    <div class="panel">
+      <h2>Independent Projects</h2>
+      <p style="color:#c9d1d9; font-size:0.75rem;">
+        Space reserved for future independent projects.
+      </p>
     </div>
   </div>
 </body>
