@@ -93,19 +93,22 @@ def show_list():
     if len(todo_list) > 0:
         index = 1
         for task in todo_list:
-            print(f"{index}. {task}\\n")
+            print(f"{index}. {task}")
             index += 1
+    print()  # blank line for spacing
 
 def add_task(task):
     todo_list.append(task)
-    print(f"Task '{task}' added to the To Do List\\n")
+    print(f"Task '{task}' added to the To Do List")
+    print()  # blank line for spacing
 
 def remove_task():
     if len(todo_list) > 0:
         removed_task = todo_list.pop()
-        print(f"Task '{removed_task}' removed from the To Do List\\n")
+        print(f"Task '{removed_task}' removed from the To Do List")
     else:
-        print("Your To Do List is empty\\n")
+        print("Your To Do List is empty")
+    print()  # blank line for spacing
   </script>
 
   <script>
@@ -141,7 +144,7 @@ def remove_task():
         awaitingTask = true;
         document.getElementById("command").placeholder = "Type your new task here:";
       } else if (cmd === "2") {
-        output = "Removing task\n\n";
+        output = "Removing task";
         await pyodide.runPythonAsync("remove_task()");
       } else if (cmd === "3") {
         output = "Quitting";
