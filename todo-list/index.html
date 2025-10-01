@@ -15,37 +15,32 @@
       font-size: 0.9em; /* smaller font for terminal feel */
     }
     #terminal {
-      position: relative;      /* for absolute input line */
+      position: relative;
       background: #000;
       color: #fff;
-      height: 100vh;           /* fill viewport */
+      height: 100vh;
       box-sizing: border-box;
-      padding: 10px;           /* no bottom padding; we’ll add a virtual cushion inside #output */
+      padding: 10px;
       border-top: 2px solid #444;
     }
     #header {
       margin-bottom: 1em;
       white-space: pre-wrap;
     }
-    /* Output area: hidden scrollbar, auto-scroll via JS, and an invisible cushion at the end */
     #output {
       white-space: pre-wrap;
       overflow-y: auto;
       height: calc(100vh - 10px - 10px - 1em - 48px);
-      /* 10px top padding, 10px bottom padding, ~1em header margin, 48px input-line height */
-      scrollbar-width: none; /* Firefox: hide scrollbar */
+      scrollbar-width: none; /* Firefox */
     }
     #output::-webkit-scrollbar {
-      display: none; /* WebKit: hide scrollbar */
+      display: none; /* WebKit */
     }
-    /* Invisible cushion so the last printed line never sits under the input bar */
     #output::after {
       content: "";
       display: block;
-      height: 64px; /* slightly larger than input bar to create breathing room */
+      height: 64px; /* cushion so last lines never hide under input */
     }
-
-    /* Input line pinned at bottom */
     #input-line {
       position: absolute;
       left: 0;
@@ -57,7 +52,7 @@
       display: flex;
       align-items: center;
       box-sizing: border-box;
-      height: 48px; /* used by #output height calc */
+      height: 48px;
     }
     #prompt {
       color: #fff;
@@ -77,9 +72,7 @@
 </head>
 <body>
   <div id="terminal">
-    <div id="header">
-      <!-- JS injects dynamic Python banner -->
-    </div>
+    <div id="header"></div>
 
     <div id="output">
 Welcome to To Do List  
@@ -135,7 +128,7 @@ def remove_task():
       return `${dateStr} ${hours}:${minutes}`;
     }
 
-    // Update Python banner (refresh every minute)
+    // Update Python banner
     function updateHeader() {
       const headerDiv = document.getElementById("header");
       headerDiv.textContent =
@@ -158,7 +151,6 @@ Type "help", "copyright", "credits" or "license" for more information.`;
     function appendAndStick(text) {
       const outDiv = document.getElementById("output");
       outDiv.textContent += text;
-      // Auto-stick to bottom without showing a scrollbar
       outDiv.scrollTop = outDiv.scrollHeight;
     }
 
@@ -178,16 +170,15 @@ Type "help", "copyright", "credits" or "license" for more information.`;
       }
 
       if (cmd === "1") {
-        // Add task flow
         output = "Adding task\n\nEnter the task:";
         awaitingTask = true;
         inputEl.placeholder = "Type your new task here:";
       } else if (cmd === "2") {
-        // Remove last task
         output = "Removing task\n\n";
         await pyodide.runPythonAsync("remove_task()");
       } else if (cmd === "3") {
-        output = "Quitting";
+        await pyodide.runPythonAsync("todo_list.clear()");
+        output = "Quitting\n\nYour To Do List is empty";
       } else if (cmd === "help") {
         output = "Type the number of an option to execute it.\n\n1 = Add a task\n2 = Remove the last task\n3 = Quit the program";
       } else if (cmd === "credits") {
