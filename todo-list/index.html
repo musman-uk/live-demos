@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>✅ To Do List</title> <!-- page title with emoji -->
+  <title>✅ To Do List</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
     body {
@@ -109,13 +109,26 @@ def remove_task():
   </script>
 
   <script>
-    // Inject dynamic Python banner with real date
-    const headerDiv = document.getElementById("header");
-    const now = new Date();
-    const dateStr = now.toDateString() + " " + now.toLocaleTimeString();
-    headerDiv.textContent =
-`Python 3.15.0 (main, ${dateStr}) [Clang 14.0.0]
+    // Function to format date without seconds
+    function formatDate() {
+      const now = new Date();
+      const dateStr = now.toDateString();
+      const hours = now.getHours().toString().padStart(2, "0");
+      const minutes = now.getMinutes().toString().padStart(2, "0");
+      return `${dateStr} ${hours}:${minutes}`;
+    }
+
+    // Function to update Python banner
+    function updateHeader() {
+      const headerDiv = document.getElementById("header");
+      headerDiv.textContent =
+`Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]
 Type "help", "copyright", "credits" or "license" for more information.`;
+    }
+
+    // Initial header + update every minute
+    updateHeader();
+    setInterval(updateHeader, 60000);
 
     let pyodideReadyPromise = loadPyodide();
     let pyodideInstance = (async () => {
@@ -156,7 +169,7 @@ Type "help", "copyright", "credits" or "license" for more information.`;
       } else if (cmd === "help") {
         output = "Type the number of an option to execute it.\n\n1 = Add a task\n2 = Remove the last task\n3 = Quit the program";
       } else if (cmd === "credits") {
-        output = "Thanks to the Python community and contributors worldwide.";
+        output = "Thanks to the Python community and contributors worldwide.\n\nThis was originally created on Mimo.";
       } else if (cmd === "copyright") {
         output = "Copyright (c) 2001-2025 Python Software Foundation.\nAll Rights Reserved.";
       } else if (cmd === "license") {
