@@ -7,7 +7,7 @@
   <style>
     body {
       background: #111;
-      color: #0f0;
+      color: #fff;
       font-family: "Courier New", monospace;
       padding: 20px;
     }
@@ -15,33 +15,38 @@
       border: 1px solid #444;
       padding: 10px;
       background: #000;
-      min-height: 200px;
+      min-height: 300px;
       white-space: pre-wrap;
+      overflow-y: auto;
     }
-    button {
-      margin: 5px;
-      background: #222;
-      color: #0f0;
-      border: 1px solid #0f0;
-      padding: 5px 10px;
-      cursor: pointer;
+    #input-line {
+      display: flex;
+      margin-top: 5px;
+    }
+    #prompt {
+      color: #fff;
+      margin-right: 5px;
+    }
+    #command {
+      flex: 1;
+      background: #000;
+      border: none;
+      color: #fff;
       font-family: inherit;
-    }
-    button:hover {
-      background: #0f0;
-      color: #000;
+      font-size: 1em;
+      outline: none;
     }
   </style>
 </head>
 <body>
   <h2>Transaction Analyser (Python‑powered)</h2>
-  <button onclick="runPython('print_summary(data)')">Print Summary</button>
-  <button onclick="runPython('analyze_transactions(data)')">Analyse Transactions</button>
-  <button onclick="clearTerminal()">Clear</button>
-
   <div id="terminal">>>> Ready for input...</div>
+  <div id="input-line">
+    <span id="prompt">>>> </span>
+    <input id="command" type="text" autofocus />
+  </div>
 
-  <!-- Python code is defined but not executed until JS calls it -->
+  <!-- Python code is defined but not executed until called -->
   <script type="text/python" id="py-code">
 data = [
   (749.17, "Investment Return"),
@@ -61,8 +66,12 @@ data = [
   (-264.66, "Groceries")
 ]
 
+def print_transactions(transactions): 
+    for amount, statement in transactions: 
+        print(f"{amount} - {statement}")
+
 def print_summary(transactions):
-    deposits = [t[0] for t in transactions if t[0] >= 0]
+    deposits = [t[0] for t in transactions if t[0] >= 0] 
     total_deposited = sum(deposits)
     print(f"Total deposited: {total_deposited}")
     withdrawals = [t[0] for t in transactions if t[0] <= 0]
@@ -71,7 +80,7 @@ def print_summary(transactions):
     balance = total_deposited + total_withdrawn
     print(f"Balance: {balance}")
 
-def analyze_transactions(transactions):
+def analyse_transactions(transactions):
     withdrawals = [t[0] for t in transactions if t[0] <= 0]
     total_withdrawals = sum(withdrawals)
     avg_withdrawal = total_withdrawals / len(withdrawals) if withdrawals else 0
@@ -88,26 +97,43 @@ def analyze_transactions(transactions):
   <script>
     let pyodideReadyPromise = loadPyodide();
 
-    async function runPython(code) {
+    async function initPython() {
       let pyodide = await pyodideReadyPromise;
-      // Load Python functions once
-      if (!pyodide.globals.get("print_summary")) {
-        await pyodide.runPythonAsync(
-          document.getElementById("py-code").textContent
-        );
-      }
-      // Capture stdout
+      await pyodide.runPythonAsync(document.getElementById("py-code").textContent);
+      return pyodide;
+    }
+
+    let pyodideInstance = initPython();
+
+    async function runCommand(cmd) {
+      let pyodide = await pyodideInstance;
       let output = "";
       pyodide.setStdout({
         batched: (s) => { output += s; }
       });
-      await pyodide.runPythonAsync(code);
-      document.getElementById("terminal").textContent += "\n>>> " + code + "\n" + output;
+
+      if (cmd === "print") {
+        await pyodide.runPythonAsync("print_summary(data)");
+      } else if (cmd === "analyse") {
+        await pyodide.runPythonAsync("analyse_transactions(data)");
+      } else if (cmd === "stop") {
+        output = "Program stopped.";
+      } else {
+        output = "Invalid choice";
+      }
+
+      const terminal = document.getElementById("terminal");
+      terminal.textContent += `\n>>> ${cmd}\n${output}`;
+      terminal.scrollTop = terminal.scrollHeight;
     }
 
-    function clearTerminal() {
-      document.getElementById("terminal").textContent = ">>> Ready for input...";
-    }
+    document.getElementById("command").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        const cmd = this.value.trim().toLowerCase();
+        this.value = "";
+        runCommand(cmd);
+      }
+    });
   </script>
 </body>
 </html>
