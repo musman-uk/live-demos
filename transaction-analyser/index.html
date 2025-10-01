@@ -5,7 +5,7 @@
   <title>📊 Transaction Analyser</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
-    /* --- Terminal look & feel --- */
+    /* Terminal‑style layout */
     body {
       background: #111; color: #fff;
       font-family: "Courier New", monospace;
@@ -22,7 +22,7 @@
       scrollbar-width: none;
     }
     #output::-webkit-scrollbar { display: none; }
-    #output::after { content: ""; display: block; height: 64px; } /* cushion */
+    #output::after { content: ""; display: block; height: 64px; } /* ensures last line never hides */
     #input-line {
       position: absolute; bottom: 0; left: 0; right: 0;
       padding: 10px; background: #000; border-top: 1px solid #333;
@@ -58,7 +58,7 @@ Options:
     </div>
   </div>
 
-  <!-- Python logic -->
+  <!-- Python logic for transaction analysis -->
   <script type="text/python" id="py-code">
 data = [
   (749.17, "Investment Return"),
@@ -87,13 +87,13 @@ def print_summary(transactions):
     print(f"  Deposited: {total_deposited:.2f}  Withdrawn: {total_withdrawn:.2f}  Balance: {balance:.2f}\n")
 
 def analyse_transactions(transactions):
-    # Print all transactions with spacing
+    # Show full dataset for context
     print("Transactions:")
     for amount, desc in transactions:
         print(f"  {amount:.2f}  {desc}")
     print()
 
-    # Calculate averages and extremes
+    # Compute averages and extremes
     withdrawals = [t[0] for t in transactions if t[0] <= 0]
     deposits = [t[0] for t in transactions if t[0] >= 0]
     avg_withdrawal = sum(withdrawals)/len(withdrawals) if withdrawals else 0
@@ -108,7 +108,7 @@ def analyse_transactions(transactions):
   </script>
 
   <script>
-    /* --- Dynamic Python banner with real time --- */
+    /* Banner shows Python version + real time, refreshed every minute */
     function formatDate() {
       const now = new Date();
       return `${now.toDateString()} ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
@@ -120,21 +120,21 @@ Type "help", "copyright", "credits" or "license" for more information.`;
     }
     updateHeader(); setInterval(updateHeader, 60000);
 
-    /* --- Bootstrap Pyodide --- */
+    /* Load Pyodide and initialise Python environment */
     let pyodideInstance = (async () => {
       let pyodide = await loadPyodide();
       await pyodide.runPythonAsync(document.getElementById("py-code").textContent);
       return pyodide;
     })();
 
-    /* --- Append output and auto-stick --- */
+    /* Append text to output and auto-scroll to bottom */
     function appendAndStick(text) {
       const out = document.getElementById("output");
       out.textContent += text;
       out.scrollTop = out.scrollHeight;
     }
 
-    /* --- Command handler --- */
+    /* Interpret user commands and route to Python or built-ins */
     async function runCommand(cmd) {
       let pyodide = await pyodideInstance;
       let output = "";
@@ -161,7 +161,7 @@ Type "help", "copyright", "credits" or "license" for more information.`;
       appendAndStick(`\nconsole >>> ${cmd}\n\n${output}`);
     }
 
-    /* --- Input listener --- */
+    /* Capture Enter key and send command */
     document.getElementById("command").addEventListener("keydown", e => {
       if (e.key === "Enter") {
         const cmd = e.target.value.trim().toLowerCase();
