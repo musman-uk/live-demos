@@ -9,18 +9,12 @@
       margin:0;
       background:#000;
       color:#fff;
-      font-family:monospace;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
+      font-family:Consolas, "Courier New", monospace; /* terminal font */
     }
     .console {
       background:#000;
-      border:1px solid #444;
-      width:95%;
-      max-width:800px;
-      height:90vh;
+      width:100%;
+      height:100vh;
       display:flex;
       flex-direction:column;
       padding:0.5rem;
@@ -30,6 +24,7 @@
       flex:1;
       overflow-y:auto;
       white-space:pre-wrap;
+      text-align:left; /* left aligned like a terminal */
       font-size:0.95rem;
     }
     #prompt {
@@ -48,7 +43,7 @@
       outline:none;
     }
     @media (max-width:600px) {
-      .console { height:80vh; font-size:0.85rem; }
+      #output { font-size:0.85rem; }
     }
   </style>
 </head>
@@ -56,7 +51,7 @@
   <div class="console">
     <div id="output">
 Python 3.11 (Pyodide)
-Transaction Analyzer.
+Transaction Analyzer
 Options:
 1. Print summary
 2. Analyze transactions
@@ -96,10 +91,6 @@ def analyze_transactions():
             f"Average withdrawal: {avg(withdrawals):.2f}\\n"
             f"Largest deposit: {max(deposits) if deposits else 0}\\n"
             f"Largest withdrawal: {min(withdrawals) if withdrawals else 0}")
-
-def add_transaction():
-    # In browser, we can't use input(), so JS will pass values
-    return "Use JS prompt to add transaction"
       `);
     }
 
