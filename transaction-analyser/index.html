@@ -38,17 +38,17 @@
 </head>
 <body>
   <div id="terminal">
-    <div id="header">
-Python 3.15.0 (main, Transaction Analyser) [Clang 14.0.0]  
-Type "help", "credits", or "stop" for more information.
-    </div>
+    <div id="header"></div>
 
     <div id="output">
 Welcome to Transaction Analyser  
 
 Options:  
+
 1. Print summary (type 'print')  
+
 2. Analyse transactions (type 'analyse')  
+
 3. Stop program (type 'stop')  
     </div>
 
@@ -61,13 +61,21 @@ Options:
   <!-- Python logic -->
   <script type="text/python" id="py-code">
 data = [
-  (749.17, "Investment Return"), (-11.54, "Utilities"),
-  (-247.58, "Online Shopping"), (981.17, "Investment Return"),
-  (-410.65, "Rent"), (310.60, "Rent"), (563.70, "Gift"),
-  (220.79, "Salary"), (-49.85, "Car Maintenance"),
-  (308.49, "Salary"), (-205.55, "Car Maintenance"),
-  (870.64, "Salary"), (-881.51, "Utilities"),
-  (518.14, "Salary"), (-264.66, "Groceries")
+  (749.17, "Investment Return"),
+  (-11.54, "Utilities"),
+  (-247.58, "Online Shopping"),
+  (981.17, "Investment Return"),
+  (-410.65, "Rent"),
+  (310.60, "Rent"),
+  (563.70, "Gift"),
+  (220.79, "Salary"),
+  (-49.85, "Car Maintenance"),
+  (308.49, "Salary"),
+  (-205.55, "Car Maintenance"),
+  (870.64, "Salary"),
+  (-881.51, "Utilities"),
+  (518.14, "Salary"),
+  (-264.66, "Groceries")
 ]
 
 def print_summary(transactions):
@@ -90,6 +98,18 @@ def analyse_transactions(transactions):
   </script>
 
   <script>
+    /* --- Dynamic Python banner with real time --- */
+    function formatDate() {
+      const now = new Date();
+      return `${now.toDateString()} ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
+    }
+    function updateHeader() {
+      document.getElementById("header").textContent =
+`Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]
+Type "help", "credits", "copyright" or "license" for more information.`;
+    }
+    updateHeader(); setInterval(updateHeader, 60000);
+
     /* --- Bootstrap Pyodide --- */
     let pyodideInstance = (async () => {
       let pyodide = await loadPyodide();
@@ -117,15 +137,19 @@ def analyse_transactions(transactions):
       } else if (cmd === "credits") {
         output = "This was originally created on Mimo.";
       } else if (cmd === "help") {
-        output = "Options: print, analyse, stop";
+        output = "Options:\n\nprint = show summary totals\nanalyse = show averages and largest transactions\nstop = end program";
+      } else if (cmd === "copyright") {
+        output = "Copyright (c) 2001-2025 Python Software Foundation.\nAll Rights Reserved.";
+      } else if (cmd === "license") {
+        output = "Python is distributed under the PSF License.\nSee https://docs.python.org/3/license.html for details.";
       } else if (cmd === "stop") {
-        output = "Program stopped. Data cleared.";
+        output = "Quitting\n\nTransactions cleared.";
         await pyodide.runPythonAsync("data.clear()");
       } else {
         output = "Invalid choice";
       }
 
-      appendAndStick(`\nconsole >>> ${cmd}\n${output}`);
+      appendAndStick(`\nconsole >>> ${cmd}\n\n${output}`);
     }
 
     /* --- Input listener --- */
