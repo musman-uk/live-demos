@@ -87,14 +87,24 @@ def print_summary(transactions):
     print(f"  Deposited: {total_deposited:.2f}  Withdrawn: {total_withdrawn:.2f}  Balance: {balance:.2f}\n")
 
 def analyse_transactions(transactions):
+    # Print all transactions with spacing
+    print("Transactions:")
+    for amount, desc in transactions:
+        print(f"  {amount:.2f}  {desc}")
+    print()
+
+    # Calculate averages and extremes
     withdrawals = [t[0] for t in transactions if t[0] <= 0]
     deposits = [t[0] for t in transactions if t[0] >= 0]
     avg_withdrawal = sum(withdrawals)/len(withdrawals) if withdrawals else 0
     avg_deposit = sum(deposits)/len(deposits) if deposits else 0
+
     transactions.sort()
-    print("Transactions:")
+    largest_withdrawal, largest_deposit = transactions[0], transactions[-1]
+
     print(f"  Avg withdrawal: {avg_withdrawal:.2f}  Avg deposit: {avg_deposit:.2f}")
-    print(f"  Largest withdrawal: {transactions[0]}  Largest deposit: {transactions[-1]}\n")
+    print(f"  Largest withdrawal: {largest_withdrawal}")
+    print(f"  Largest deposit: {largest_deposit}\n")
   </script>
 
   <script>
@@ -106,7 +116,7 @@ def analyse_transactions(transactions):
     function updateHeader() {
       document.getElementById("header").textContent =
 `Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]
-Type "help", "credits", "copyright" or "license" for more information.`;
+Type "help", "copyright", "credits" or "license" for more information.`;
     }
     updateHeader(); setInterval(updateHeader, 60000);
 
@@ -134,17 +144,16 @@ Type "help", "credits", "copyright" or "license" for more information.`;
         await pyodide.runPythonAsync("print_summary(data)");
       } else if (cmd === "analyse") {
         await pyodide.runPythonAsync("analyse_transactions(data)");
+      } else if (cmd === "help") {
+        output = "Options:\n\nprint = show summary totals\nanalyse = show dataset, averages, largest values\nstop = end program";
       } else if (cmd === "credits") {
         output = "This was originally created on Mimo.";
-      } else if (cmd === "help") {
-        output = "Options:\n\nprint = show summary totals\nanalyse = show averages and largest transactions\nstop = end program";
       } else if (cmd === "copyright") {
         output = "Copyright (c) 2001-2025 Python Software Foundation.\nAll Rights Reserved.";
       } else if (cmd === "license") {
         output = "Python is distributed under the PSF License.\nSee https://docs.python.org/3/license.html for details.";
       } else if (cmd === "stop") {
-        output = "Quitting\n\nTransactions cleared.";
-        await pyodide.runPythonAsync("data.clear()");
+        output = "Program stopped.\n\nOptions:\n\n1. Print summary (type 'print')\n\n2. Analyse transactions (type 'analyse')\n\n3. Stop program (type 'stop')";
       } else {
         output = "Invalid choice";
       }
