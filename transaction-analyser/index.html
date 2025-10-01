@@ -47,11 +47,15 @@
       font:inherit;
       outline:none;
     }
+    /* Responsive tweaks */
+    @media (max-width:600px) {
+      .console { height:80vh; font-size:0.9rem; }
+    }
   </style>
 </head>
 <body>
   <div class="console">
-    <div id="output">Python 3.11.5 (PyScript)\nType "1", "2", "3", or "4" to choose an option.\n</div>
+    <div id="output">Python 3.11.5 (PyScript)\nTransaction Analyzer ready.\nOptions:\n1. Print summary\n2. Analyze transactions\n3. Add a transaction\n4. Stop program\n</div>
     <div id="prompt"><span>>> </span><input id="choice" placeholder="Enter option number"></div>
   </div>
 
@@ -83,10 +87,13 @@ def analyze_transactions():
             f"Largest withdrawal: {min(withdrawals) if withdrawals else 0}")
 
 def add_transaction():
-    amt = float(input("Enter amount (positive=deposit, negative=withdrawal): "))
-    desc = input("Enter description: ")
-    data.append((amt, desc))
-    return "Transaction added."
+    try:
+        amt = float(input("Enter amount (positive=deposit, negative=withdrawal): "))
+        desc = input("Enter description: ")
+        data.append((amt, desc))
+        return "Transaction added."
+    except:
+        return "Invalid input."
 
 def handle_choice(event):
     choice = document.getElementById("choice").value.strip()
