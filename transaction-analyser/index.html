@@ -19,14 +19,12 @@
       border-top: 2px solid #444;
       background: #000;
       color: #fff;
-      flex-grow: 0;
-      height: 40%;
+      flex-grow: 1;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
       padding: 10px;
       box-sizing: border-box;
-      overflow-y: auto;
     }
     #header {
       margin-bottom: 1em;
@@ -53,18 +51,28 @@
       font-size: 1em;
       outline: none;
     }
+    details {
+      margin-top: 0.5em;
+      color: #aaa;
+    }
   </style>
 </head>
 <body>
   <div id="terminal">
     <div id="header">
-      Python 3.15.0 (default, Oct 2025)  
-      Transaction Analyser — Originally created on Mimo
+      Python 3.15  
+      <details>
+        <summary>Credits</summary>
+        Originally created on Mimo
+      </details>
     </div>
     <div id="output">
 Choose an option  
+
 1. Print summary (type 'print')  
+
 2. Analyse transactions (type 'analyse')  
+
 3. Stop program (type 'stop')  
     </div>
     <div id="input-line">
@@ -143,7 +151,7 @@ def analyse_transactions(transactions):
       }
 
       const outDiv = document.getElementById("output");
-      outDiv.textContent += `\n>>> ${cmd}\n${output}`;
+      outDiv.textContent += `\n>>> ${cmd}\n${output}\n`;
       outDiv.scrollTop = outDiv.scrollHeight;
     }
 
