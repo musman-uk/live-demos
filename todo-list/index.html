@@ -5,7 +5,7 @@
   <title>✅ To Do List</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
-    /* --- Global terminal look --- */
+    /* --- Terminal look & feel --- */
     body {
       background: #111;
       color: #fff;
@@ -40,7 +40,7 @@
     #command {
       flex: 1; background: #000; border: none; color: #fff;
       font-family: inherit; font-size: 1em; outline: none;
-      caret-color: #fff; /* blinking caret */
+      caret-color: #fff; /* native blinking caret */
     }
   </style>
 </head>
@@ -59,7 +59,7 @@ Options:
 3. Quit  
     </div>
     <div id="input-line">
-      <span id="prompt">>>> </span>
+      <span id="prompt">console >>> </span>
       <input id="command" type="text" placeholder="Enter your choice 1, 2, or 3:" autofocus />
     </div>
   </div>
@@ -69,17 +69,20 @@ Options:
 todo_list = []
 
 def show_list():
+    # Print all tasks with numbering; add a blank line for readability
     if todo_list:
         for i, task in enumerate(todo_list, 1):
             print(f"{i}. {task}")
     print()
 
 def add_task(task):
+    # Append a new task and confirm to the user
     todo_list.append(task)
     print(f"Task '{task}' added to the To Do List")
     print()
 
 def remove_task():
+    # Remove the last task if available, otherwise warn
     if todo_list:
         removed = todo_list.pop()
         print(f"Task '{removed}' removed from the To Do List")
@@ -89,7 +92,9 @@ def remove_task():
   </script>
 
   <script>
-    /* --- Dynamic Python banner --- */
+    /* --- Dynamic Python banner --- 
+       Simulates the REPL header with version and current date/time.
+       Updates every minute to maintain immersion. */
     function formatDate() {
       const now = new Date();
       return `${now.toDateString()} ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
@@ -110,14 +115,19 @@ Type "help", "copyright", "credits" or "license" for more information.`;
 
     let awaitingTask = false;
 
-    /* --- Append output and auto-stick to bottom --- */
+    /* --- Output handling ---
+       Append new text and auto-stick to bottom.
+       Scrollbar is hidden; cushion ensures last line never hides
+       behind the fixed input bar. */
     function appendAndStick(text) {
       const out = document.getElementById("output");
       out.textContent += text;
       out.scrollTop = out.scrollHeight;
     }
 
-    /* --- Command handler --- */
+    /* --- Command handler ---
+       Routes user input to Python functions or built-in commands.
+       Quitting clears the list but keeps history visible. */
     async function runCommand(cmd) {
       let pyodide = await pyodideInstance;
       let output = "";
@@ -127,7 +137,7 @@ Type "help", "copyright", "credits" or "license" for more information.`;
       if (awaitingTask) {
         await pyodide.runPythonAsync(`add_task(${JSON.stringify(cmd)})`);
         awaitingTask = false;
-        appendAndStick(`\n>>> ${cmd}\n\n${output}`);
+        appendAndStick(`\nconsole >>> ${cmd}\n\n${output}`);
         inputEl.placeholder = "Enter your choice 1, 2, or 3:";
         return;
       }
@@ -154,7 +164,7 @@ Type "help", "copyright", "credits" or "license" for more information.`;
         output = "Invalid choice";
       }
 
-      appendAndStick(`\n>>> ${cmd}\n\n${output}`);
+      appendAndStick(`\nconsole >>> ${cmd}\n\n${output}`);
     }
 
     /* --- Input listener --- */
