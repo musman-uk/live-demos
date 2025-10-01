@@ -54,7 +54,7 @@
       caret-color: transparent; /* hide default caret */
       position: relative;
     }
-    /* Blinking block cursor */
+    /* Solid block cursor (no blinking) */
     #command::after {
       content: "";
       display: inline-block;
@@ -62,11 +62,7 @@
       height: 1em;
       background: #fff;
       margin-left: 2px;
-      animation: blink 1s steps(1) infinite;
       vertical-align: bottom;
-    }
-    @keyframes blink {
-      50% { background: transparent; }
     }
     details {
       margin-top: 0.5em;
@@ -86,7 +82,7 @@
     <div id="output">
 Welcome to Transaction Analyser  
 
-Choose an option  
+Choose option  
 
 1. Print summary (type 'print')  
 
@@ -179,7 +175,7 @@ def analyse_transactions(transactions):
       }
 
       const outDiv = document.getElementById("output");
-      outDiv.textContent += `\n>>> ${cmd}\n${output}\n`;
+      outDiv.textContent += `\n>>> ${cmd}\n${output}\nChoose option\n\n1. Print summary (type 'print')\n\n2. Analyse transactions (type 'analyse')\n\n3. Stop program (type 'stop')\n`;
       outDiv.scrollTop = outDiv.scrollHeight;
     }
 
