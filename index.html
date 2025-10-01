@@ -2,110 +2,132 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Live Demos</title>
+  <title>Transaction Analyzer</title>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
     body {
-      background:#0a0f13; /* deep blue‑black */
-      color:#e6edf3;
-      font-family:"Segoe UI",Roboto,Arial,sans-serif;
-      padding:2rem;
-      text-align:center;
+      margin:0;
+      background:#000;
+      color:#fff;
+      font-family:Consolas, "Courier New", monospace; /* terminal font */
     }
-    h1 {
-      color:#00a6bb; /* blue‑jade accent */
-      margin-bottom:1rem;
-      font-size:2rem;
+    .console {
+      background:#000;
+      width:100%;
+      height:100vh;
+      display:flex;
+      flex-direction:column;
+      padding:0.5rem;
+      box-sizing:border-box;
     }
-    p {
-      margin-bottom:2rem;
-      font-size:1.05rem;
+    #output {
+      flex:1;
+      overflow-y:auto;
+      white-space:pre-wrap;
+      text-align:left; /* left aligned like a terminal */
+      font-size:0.95rem;
     }
-    table {
-      margin:auto;
-      border-collapse:collapse;
-      width:95%;
-      max-width:1000px;
+    #prompt {
+      display:flex;
+      align-items:center;
+      border-top:1px solid #444;
+      padding-top:0.25rem;
     }
-    th, td {
-      border:1px solid #2d333b;
-      padding:0.75rem;
-      text-align:left;
+    #prompt span { margin-right:0.5rem; }
+    #choice {
+      flex:1;
+      background:#000;
+      border:none;
+      color:#fff;
+      font:inherit;
+      outline:none;
     }
-    th {
-      background:#11232a; /* dark blue‑jade header */
-      color:#00a6bb;
+    @media (max-width:600px) {
+      #output { font-size:0.85rem; }
     }
-    tr:nth-child(even) { background:#11232a; }
-    a {
-      color:#00a6bb;
-      text-decoration:none;
-      font-weight:600;
-    }
-    a:hover { text-decoration:underline; }
   </style>
 </head>
 <body>
-  <h1>🌟 Live Demos</h1>
-  <p>Welcome to my projects showcase. Explore interactive demos directly in your browser as they are published.</p>
+  <div class="console">
+    <div id="output">
+Python 3.11 (Pyodide)
+Transaction Analyser
+Options:
+1. Print summary
+2. Analyse transactions
+3. Add a transaction
+4. Stop program
 
-  <h2 style="color:#00a6bb; margin:1.5rem 0 1rem;">Projects</h2>
-  <table>
-    <tr>
-      <th>🧩 Project</th>
-      <th>🛠️ Stack</th>
-      <th>📄 Description</th>
-      <th>🌐 Link</th>
-      <th>💻 Source Code</th>
-    </tr>
-    <tr>
-      <td>✅ To Do List</td>
-      <td>Python</td>
-      <td>Simple command‑line task manager to add, complete, and delete tasks.</td>
-      <td><a href="todo-list/">View</a></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>📊 Transaction Analyser</td>
-      <td>Python</td>
-      <td>Parses transactions to calculate totals, categories, and summaries.</td>
-      <td><a href="transaction-analyser/">View</a></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>🔄 Unit Converter</td>
-      <td>HTML, CSS, JavaScript</td>
-      <td>Converts between metric and imperial units with real‑time validation.</td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>🏆 Score Keeper</td>
-      <td>HTML, CSS, JavaScript, React</td>
-      <td>Interactive scoreboard with adjustable win conditions and reset.</td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>🐾 Pixel Paws</td>
-      <td>HTML, CSS, JavaScript</td>
-      <td>Pixel art canvas with pet sprites. Draw, erase, and reset the grid.</td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>🖼️ Interactive Gallery</td>
-      <td>HTML, CSS, JavaScript</td>
-      <td>Responsive gallery with modal previews and hover animations.</td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>🔐 Caesar Cipher</td>
-      <td>HTML, CSS, JavaScript</td>
-      <td>Encode and decode messages with a classic Caesar cipher shift.</td>
-      <td></td>
-      <td></td>
-    </tr>
-  </table>
+    </div>
+    <div id="prompt"><span>>> </span><input id="choice" placeholder="Enter option number"></div>
+  </div>
+
+  <script>
+    let pyodide;
+
+    async function main() {
+      pyodide = await loadPyodide();
+      await pyodide.runPythonAsync(`
+data = [
+    (749.17, "Investment Return"), (-11.54, "Utilities"), (-247.58, "Online Shopping"),
+    (981.17, "Investment Return"), (-410.65, "Rent"), (310.60, "Rent"), (563.70, "Gift"),
+    (220.79, "Salary"), (-49.85, "Car Maintenance"), (308.49, "Salary"),
+    (-205.55, "Car Maintenance"), (870.64, "Salary"), (-881.51, "Utilities"),
+    (518.14, "Salary"), (-264.66, "Groceries")
+]
+
+def print_summary():
+    deposits = [amt for amt,_ in data if amt>=0]
+    withdrawals = [amt for amt,_ in data if amt<0]
+    return (f"Total deposited: {sum(deposits):.2f}\\n"
+            f"Total withdrawn: {sum(withdrawals):.2f}\\n"
+            f"Balance: {sum(deposits)+sum(withdrawals):.2f}")
+
+def analyze_transactions():
+    deposits = [amt for amt,_ in data if amt>=0]
+    withdrawals = [amt for amt,_ in data if amt<0]
+    avg = lambda arr: sum(arr)/len(arr) if arr else 0
+    return (f"Average deposit: {avg(deposits):.2f}\\n"
+            f"Average withdrawal: {avg(withdrawals):.2f}\\n"
+            f"Largest deposit: {max(deposits) if deposits else 0}\\n"
+            f"Largest withdrawal: {min(withdrawals) if withdrawals else 0}")
+      `);
+    }
+
+    function appendOutput(text) {
+      const out = document.getElementById("output");
+      out.textContent += text + "\\n";
+      out.scrollTop = out.scrollHeight;
+    }
+
+    document.getElementById("choice").addEventListener("keydown", async e => {
+      if (e.key === "Enter") {
+        const choice = e.target.value.trim();
+        let result = "";
+        if (choice === "1") {
+          result = await pyodide.runPythonAsync("print_summary()");
+        } else if (choice === "2") {
+          result = await pyodide.runPythonAsync("analyze_transactions()");
+        } else if (choice === "3") {
+          const amt = parseFloat(prompt("Enter amount (positive=deposit, negative=withdrawal):"));
+          const desc = prompt("Enter description:");
+          if (!isNaN(amt) && desc) {
+            await pyodide.runPythonAsync(\`data.append((${amt}, "${desc}"))\`);
+            result = "Transaction added.";
+          } else {
+            result = "Invalid input.";
+          }
+        } else if (choice === "4") {
+          result = "Exiting program...";
+        } else {
+          result = "Invalid choice.";
+        }
+        appendOutput(\`>>> \${choice}\\n\${result}\`);
+        e.target.value = "";
+      }
+    });
+
+    main();
+  </script>
 </body>
 </html>
