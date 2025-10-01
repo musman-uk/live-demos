@@ -2,61 +2,141 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>To Do List Console</title>
+  <title>Transaction Analyzer</title>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
-    body { background:#0d1117; color:#c9d1d9; font-family:monospace; padding:2rem; }
-    .console { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:1rem; max-width:600px; margin:auto; }
-    .line { margin:0.25rem 0; }
-    .prompt { color:#58a6ff; }
-    input { width:100%; margin-top:1rem; background:#0d1117; border:none; border-bottom:1px solid #58a6ff; color:#c9d1d9; font:inherit; outline:none; }
+    body {
+      margin:0;
+      background:#000;
+      color:#fff;
+      font-family:monospace;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+    }
+    .console {
+      background:#000;
+      border:1px solid #444;
+      width:95%;
+      max-width:800px;
+      height:90vh;
+      display:flex;
+      flex-direction:column;
+      padding:0.5rem;
+      box-sizing:border-box;
+    }
+    #output {
+      flex:1;
+      overflow-y:auto;
+      white-space:pre-wrap;
+      font-size:0.95rem;
+    }
+    #prompt {
+      display:flex;
+      align-items:center;
+      border-top:1px solid #444;
+      padding-top:0.25rem;
+    }
+    #prompt span { margin-right:0.5rem; }
+    #choice {
+      flex:1;
+      background:#000;
+      border:none;
+      color:#fff;
+      font:inherit;
+      outline:none;
+    }
+    @media (max-width:600px) {
+      .console { height:80vh; font-size:0.85rem; }
+    }
   </style>
 </head>
 <body>
-  <div class="console" id="console">
-    <div class="line">Python 3.11.5 (default, Sep 2025)</div>
-    <div class="line">Type "help", "credits", or "license" for more information.</div>
-    <div class="line prompt">&gt;&gt;&gt; Welcome to the To Do List Console</div>
-    <div class="line">1. Add Task</div>
-    <div class="line">2. View Tasks</div>
-    <div class="line">3. Remove Task</div>
-    <div class="line">4. Exit</div>
-    <input id="input" placeholder=">>> Enter choice or command">
+  <div class="console">
+    <div id="output">
+Python 3.11 (Pyodide)
+Transaction Analyzer ready.
+Options:
+1. Print summary
+2. Analyze transactions
+3. Add a transaction
+4. Stop program
+
+    </div>
+    <div id="prompt"><span>>> </span><input id="choice" placeholder="Enter option number"></div>
   </div>
 
   <script>
-    const input = document.getElementById('input');
-    const consoleDiv = document.getElementById('console');
-    let tasks = [];
+    let pyodide;
 
-    function print(text, cls="line") {
-      const div = document.createElement('div');
-      div.className = cls;
-      div.textContent = text;
-      consoleDiv.insertBefore(div, input);
-      consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    async function main() {
+      pyodide = await loadPyodide();
+      await pyodide.runPythonAsync(`
+data = [
+    (749.17, "Investment Return"), (-11.54, "Utilities"), (-247.58, "Online Shopping"),
+    (981.17, "Investment Return"), (-410.65, "Rent"), (310.60, "Rent"), (563.70, "Gift"),
+    (220.79, "Salary"), (-49.85, "Car Maintenance"), (308.49, "Salary"),
+    (-205.55, "Car Maintenance"), (870.64, "Salary"), (-881.51, "Utilities"),
+    (518.14, "Salary"), (-264.66, "Groceries")
+]
+
+def print_summary():
+    deposits = [amt for amt,_ in data if amt>=0]
+    withdrawals = [amt for amt,_ in data if amt<0]
+    return (f"Total deposited: {sum(deposits):.2f}\\n"
+            f"Total withdrawn: {sum(withdrawals):.2f}\\n"
+            f"Balance: {sum(deposits)+sum(withdrawals):.2f}")
+
+def analyze_transactions():
+    deposits = [amt for amt,_ in data if amt>=0]
+    withdrawals = [amt for amt,_ in data if amt<0]
+    avg = lambda arr: sum(arr)/len(arr) if arr else 0
+    return (f"Average deposit: {avg(deposits):.2f}\\n"
+            f"Average withdrawal: {avg(withdrawals):.2f}\\n"
+            f"Largest deposit: {max(deposits) if deposits else 0}\\n"
+            f"Largest withdrawal: {min(withdrawals) if withdrawals else 0}")
+
+def add_transaction():
+    # In browser, we can't use input(), so JS will pass values
+    return "Use JS prompt to add transaction"
+      `);
     }
 
-    const commands = {
-      "1": () => { let t=prompt("Enter new task:"); if(t){tasks.push(t); print("Task added: "+t);} },
-      "2": () => tasks.length?tasks.forEach((t,i)=>print((i+1)+". "+t)):print("No tasks yet."),
-      "3": () => { let n=prompt("Task number to remove:"); let i=parseInt(n)-1; if(i>=0&&i<tasks.length){print("Removed: "+tasks[i]);tasks.splice(i,1);} else print("Invalid task."); },
-      "4": () => { print("Exiting..."); input.disabled=true; },
-      "exit": () => commands["4"](),
-      "quit": () => commands["4"](),
-      "help": () => ["1=Add","2=View","3=Remove","4=Exit","help, license, credits, clear, version"].forEach(x=>print(x)),
-      "license": () => print("MIT License. Use freely with attribution."),
-      "credits": () => print("Original exercise sourced via Mimo and extended for interactivity."),
-      "version": () => print("Python 3.11.5"),
-      "clear": () => { [...consoleDiv.querySelectorAll('.line,.prompt')].forEach(el=>el.remove()); print("Console cleared."); print(">>> Welcome to the To Do List Console","prompt"); }
-    };
+    function appendOutput(text) {
+      const out = document.getElementById("output");
+      out.textContent += text + "\\n";
+      out.scrollTop = out.scrollHeight;
+    }
 
-    input.addEventListener('keydown', e => {
-      if(e.key==="Enter" && !input.disabled){
-        let cmd=input.value.trim().toLowerCase(); input.value="";
-        print(">>> "+cmd,"prompt");
-        (commands[cmd]||(()=>print("Invalid choice. Type help.")))();
+    document.getElementById("choice").addEventListener("keydown", async e => {
+      if (e.key === "Enter") {
+        const choice = e.target.value.trim();
+        let result = "";
+        if (choice === "1") {
+          result = await pyodide.runPythonAsync("print_summary()");
+        } else if (choice === "2") {
+          result = await pyodide.runPythonAsync("analyze_transactions()");
+        } else if (choice === "3") {
+          const amt = parseFloat(prompt("Enter amount (positive=deposit, negative=withdrawal):"));
+          const desc = prompt("Enter description:");
+          if (!isNaN(amt) && desc) {
+            await pyodide.runPythonAsync(\`data.append((${amt}, "${desc}"))\`);
+            result = "Transaction added.";
+          } else {
+            result = "Invalid input.";
+          }
+        } else if (choice === "4") {
+          result = "Exiting program...";
+        } else {
+          result = "Invalid choice.";
+        }
+        appendOutput(\`>>> \${choice}\\n\${result}\`);
+        e.target.value = "";
       }
     });
+
+    main();
   </script>
 </body>
 </html>
