@@ -23,6 +23,8 @@
       text-align:center;
       color:#c9d1d9;
       margin-bottom:2rem;
+      max-width:600px;
+      line-height:1.5;
     }
     h2 {
       margin:1rem 0;
@@ -35,9 +37,11 @@
       width:100%;
     }
     .table-wrapper {
-      flex:0 0 25%;          /* quarter of page */
-      max-width:350px;       /* cap width */
-      min-width:280px;       /* keep readable */
+      flex:0 0 25%;          /* quarter of page width */
+      max-width:350px;
+      min-width:280px;
+      max-height:500px;      /* cap height so it does not stretch too long */
+      overflow-y:auto;       /* scroll if content exceeds height */
     }
     table {
       border-collapse:collapse;
@@ -56,6 +60,8 @@
     th {
       background:#1f2937;
       color:#9ccfd8;
+      position:sticky;
+      top:0;
     }
     tr:hover {
       background:#1e2a34;
@@ -70,8 +76,9 @@
     }
     @media (max-width:800px) {
       .table-wrapper {
-        flex:1 1 100%;   /* full width on mobile */
+        flex:1 1 90%;   /* expand on mobile */
         max-width:none;
+        max-height:none; /* allow full height on small screens */
       }
       th, td { font-size:0.8rem; }
     }
@@ -79,9 +86,11 @@
 </head>
 <body>
   <h1>Live Demos</h1>
-  <p>Welcome to my live demos of projects</p>
+  <p>
+    Welcome to the live demos of my projects, here you can explore them and see how they are built.
+  </p>
 
-  <h2>Guided Projects</h2>
+  <h2>Projects</h2>
   <div class="table-container">
     <div class="table-wrapper">
       <table>
@@ -95,7 +104,7 @@
         <tr>
           <td>✅ To Do List</td>
           <td>Python</td>
-          <td>Command‑line task manager.</td>
+          <td>Command line task manager.</td>
           <td><a href="todo-list/index.html">Demo</a></td>
           <td></td>
         </tr>
@@ -109,7 +118,7 @@
         <tr>
           <td>🔄 Unit Converter</td>
           <td>HTML, CSS, JS</td>
-          <td>Metric ↔ Imperial converter.</td>
+          <td>Metric to imperial converter.</td>
           <td>—</td>
           <td></td>
         </tr>
@@ -137,7 +146,7 @@
         <tr>
           <td>🔐 Caesar Cipher</td>
           <td>HTML, CSS, JS</td>
-          <td>Encode/decode with Caesar shift.</td>
+          <td>Encode and decode with Caesar shift.</td>
           <td>—</td>
           <td></td>
         </tr>
