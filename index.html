@@ -2,131 +2,129 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Transaction Analyser</title>
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+  <title>Live Demos</title>
   <style>
     body {
       margin:0;
-      background:#000;
-      color:#fff;
-      font-family:Consolas, "Courier New", monospace;
-    }
-    .console {
-      background:#000;
-      width:100%;
-      height:100vh;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background:#0d1117;
+      color:#e6edf3;
       display:flex;
       flex-direction:column;
-      padding:0.5rem;
-      box-sizing:border-box;
-    }
-    #output {
-      flex:1;
-      overflow-y:auto;
-      white-space:pre-wrap;
-      text-align:left;
-      font-size:0.95rem;
-    }
-    #prompt {
-      display:flex;
       align-items:center;
-      border-top:1px solid #444;
-      padding-top:0.25rem;
+      padding:2rem;
     }
-    #prompt span { margin-right:0.5rem; }
-    #choice {
-      flex:1;
-      background:#000;
-      border:none;
-      color:#fff;
-      font:inherit;
-      outline:none;
+    h1 {
+      color:#9ccfd8; /* subtle teal */
+      margin-bottom:0.5rem;
+    }
+    p {
+      color:#c9d1d9;
+      margin-bottom:2rem;
+      max-width:700px;
+      text-align:center;
+    }
+    h2 {
+      margin:1rem 0;
+      color:#9ccfd8;
+    }
+    table {
+      border-collapse:collapse;
+      width:100%;
+      max-width:1000px;
+      background:#161b22;
+      border:1px solid #30363d;
+      border-radius:6px;
+      overflow:hidden;
+    }
+    th, td {
+      padding:1rem;
+      text-align:left;
+      border-bottom:1px solid #30363d;
+    }
+    th {
+      background:#1f2937;
+      color:#9ccfd8;
+    }
+    tr:hover {
+      background:#1e2a34;
+    }
+    a {
+      color:#9ccfd8;
+      text-decoration:none;
+      font-weight:500;
+    }
+    a:hover {
+      text-decoration:underline;
+    }
+    @media (max-width:700px) {
+      body { padding:1rem; }
+      table, th, td { font-size:0.9rem; }
     }
   </style>
 </head>
 <body>
-  <div class="console">
-    <div id="output">
-Python 3.11 (Pyodide)
-Transaction Analyser
-Options:
-1. Print summary
-2. Analyse transactions
-3. Add a transaction
-4. Stop program
+  <h1>Live Demos</h1>
+  <p>Welcome to my live demos of projects</p>
 
-    </div>
-    <div id="prompt"><span>>> </span><input id="choice" autofocus></div>
-  </div>
-
-  <script>
-    let pyodideReady = false;
-    let pyodide;
-
-    async function initPyodide() {
-      pyodide = await loadPyodide();
-      await pyodide.runPythonAsync(`
-data = [
-    (749.17, "Investment Return"), (-11.54, "Utilities"), (-247.58, "Online Shopping"),
-    (981.17, "Investment Return"), (-410.65, "Rent"), (310.60, "Rent"), (563.70, "Gift"),
-    (220.79, "Salary"), (-49.85, "Car Maintenance"), (308.49, "Salary"),
-    (-205.55, "Car Maintenance"), (870.64, "Salary"), (-881.51, "Utilities"),
-    (518.14, "Salary"), (-264.66, "Groceries")
-]
-
-def print_summary():
-    deposits = [amt for amt,_ in data if amt>=0]
-    withdrawals = [amt for amt,_ in data if amt<0]
-    return (f"Total deposited: {sum(deposits):.2f}\\n"
-            f"Total withdrawn: {sum(withdrawals):.2f}\\n"
-            f"Balance: {sum(deposits)+sum(withdrawals):.2f}")
-
-def analyse_transactions():
-    deposits = [amt for amt,_ in data if amt>=0]
-    withdrawals = [amt for amt,_ in data if amt<0]
-    avg = lambda arr: sum(arr)/len(arr) if arr else 0
-    return (f"Average deposit: {avg(deposits):.2f}\\n"
-            f"Average withdrawal: {avg(withdrawals):.2f}\\n"
-            f"Largest deposit: {max(deposits) if deposits else 0}\\n"
-            f"Largest withdrawal: {min(withdrawals) if withdrawals else 0}")
-      `);
-      pyodideReady = true;
-    }
-
-    function appendOutput(text) {
-      const out = document.getElementById("output");
-      out.textContent += text + "\\n";
-      out.scrollTop = out.scrollHeight;
-    }
-
-    document.getElementById("choice").addEventListener("keydown", async e => {
-      if (e.key === "Enter" && pyodideReady) {
-        const choice = e.target.value.trim();
-        let result = "";
-        if (choice === "1") {
-          result = await pyodide.runPythonAsync("print_summary()");
-        } else if (choice === "2") {
-          result = await pyodide.runPythonAsync("analyse_transactions()");
-        } else if (choice === "3") {
-          const amt = parseFloat(prompt("Enter amount (positive=deposit, negative=withdrawal):"));
-          const desc = prompt("Enter description:");
-          if (!isNaN(amt) && desc) {
-            await pyodide.runPythonAsync(\`data.append((${amt}, "${desc}"))\`);
-            result = "Transaction added.";
-          } else {
-            result = "Invalid input.";
-          }
-        } else if (choice === "4") {
-          result = "Exiting program...";
-        } else {
-          result = "Invalid choice.";
-        }
-        appendOutput(\`>>> \${choice}\\n\${result}\`);
-        e.target.value = "";
-      }
-    });
-
-    initPyodide();
-  </script>
+  <h2>Guided Projects</h2>
+  <table>
+    <tr>
+      <th>🧩 Project</th>
+      <th>🛠️ Stack</th>
+      <th>📄 Description</th>
+      <th>🌐 Live Demo</th>
+      <th>💻 Source Code</th>
+    </tr>
+    <tr>
+      <td>✅ To Do List</td>
+      <td>Python</td>
+      <td>Command‑line task manager to add, complete, and delete tasks.</td>
+      <td><a href="todo-list/index.html">Demo</a></td>
+      <td><a href="https://github.com/yourusername/todo-list" target="_blank">GitHub</a></td>
+    </tr>
+    <tr>
+      <td>📊 Transaction Analyser</td>
+      <td>Python</td>
+      <td>Parses transactions to calculate totals and summaries.</td>
+      <td><a href="transaction-analyser/index.html">Demo</a></td>
+      <td><a href="https://github.com/yourusername/transaction-analyser" target="_blank">GitHub</a></td>
+    </tr>
+    <tr>
+      <td>🔄 Unit Converter</td>
+      <td>HTML, CSS, JavaScript</td>
+      <td>Converts between metric and imperial units in real time.</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>🏆 Score Keeper</td>
+      <td>HTML, CSS, JavaScript, React</td>
+      <td>Interactive scoreboard with win conditions and reset.</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>🐾 Pixel Paws</td>
+      <td>HTML, CSS, JavaScript</td>
+      <td>Pixel art canvas with drawing, erasing, and reset tools.</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>🖼️ Interactive Gallery</td>
+      <td>HTML, CSS, JavaScript</td>
+      <td>Responsive gallery with modal previews and hover effects.</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>🔐 Caesar Cipher</td>
+      <td>HTML, CSS, JavaScript</td>
+      <td>Encode and decode text with adjustable Caesar shift.</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+  </table>
 </body>
 </html>
