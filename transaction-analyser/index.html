@@ -75,9 +75,7 @@ Choose an option
 
 2. Analyse transactions (type 'analyse')  
 
-3. Print all transactions (type 'list')  
-
-4. Stop program (type 'stop')  
+3. Stop program (type 'stop')  
     </div>
     <div id="input-line">
       <span id="prompt">>>> </span>
@@ -105,40 +103,33 @@ data = [
   (-264.66, "Groceries")
 ]
 
-def print_transactions(transactions): 
-    print("Transactions:")
-    for amount, statement in transactions: 
-        print(f"  {amount:>8}  -  {statement}")
-    print()
-
 def print_summary(transactions):
     deposits = [t[0] for t in transactions if t[0] >= 0] 
     total_deposited = sum(deposits)
-    print(f"Total deposited: {total_deposited}")
-    print()
     withdrawals = [t[0] for t in transactions if t[0] <= 0]
     total_withdrawn = sum(withdrawals)
-    print(f"Total withdrawn: {total_withdrawn}")
-    print()
     balance = total_deposited + total_withdrawn
-    print(f"Balance: {balance}")
+    # One line, rounded and spaced
+    print("Summary:")
+    print(f"  Total deposited: {total_deposited:.2f}  Total withdrawn: {total_withdrawn:.2f}  Balance: {balance:.2f}")
     print()
 
 def analyse_transactions(transactions):
     withdrawals = [t[0] for t in transactions if t[0] <= 0]
     total_withdrawals = sum(withdrawals)
     avg_withdrawal = total_withdrawals / len(withdrawals) if withdrawals else 0
-    print(f"Average withdrawal: {avg_withdrawal}")
-    print()
+
     deposits = [t[0] for t in transactions if t[0] >= 0]
     total_deposits = sum(deposits)
     avg_deposit = total_deposits / len(deposits) if deposits else 0
-    print(f"Average deposit: {avg_deposit}")
-    print()
+
     transactions.sort()
-    print(f"Largest withdrawal: {transactions[0]}")
-    print()
-    print(f"Largest deposit: {transactions[-1]}")
+    largest_withdrawal = transactions[0]
+    largest_deposit = transactions[-1]
+
+    # One line, rounded and spaced
+    print("Analysis:")
+    print(f"  Average withdrawal: {avg_withdrawal:.2f}  Average deposit: {avg_deposit:.2f}  Largest withdrawal: {largest_withdrawal}  Largest deposit: {largest_deposit}")
     print()
   </script>
 
@@ -161,8 +152,6 @@ def analyse_transactions(transactions):
         await pyodide.runPythonAsync("print_summary(data)");
       } else if (cmd === "analyse") {
         await pyodide.runPythonAsync("analyse_transactions(data)");
-      } else if (cmd === "list") {
-        await pyodide.runPythonAsync("print_transactions(data)");
       } else if (cmd === "stop") {
         output = "Program stopped.";
       } else {
