@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Score Keeper</title>
+  <!-- React and ReactDOM from CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel for JSX support in the browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* App.css */
+    body {
+      background-color: lightcyan;
+      font-family: Arial, sans-serif;
+      color: darkslategray;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ScoreKeeper.css */
+    .score-keeper-container {
+      background-color: white;
+      text-align: center;
+      margin: 20px auto;
+      width: 80%;
+      max-width: 640px;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .score-keeper-heading {
+      color: teal;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+
+    .score-keeper-button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 1em;
+      color: white;
+      background-color: teal;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .score-keeper-button:hover {
+      background-color: darkslategray;
+    }
+
+    /* ScoreView.css */
+    .score-view-wrapper-leading-true {
+      color: white;
+      background-color: teal;
+      border-radius: 5px;
+      padding: 5px;
+      margin: 5px auto;
+      width: fit-content;
+    }
+
+    /* Subtle footer credit */
+    footer {
+      position: fixed;
+      bottom: 8px;
+      right: 12px;
+      font-size: 0.75em;
+      color: rgba(255,255,255,0.7);
+      text-shadow: 0 0 3px rgba(0,0,0,0.6);
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Subtle credit footer -->
+  <footer>
+    Originally created and hosted via Mimo
+  </footer>
+
+  <script type="text/babel">
+    // ScoreView.jsx
+    const ScoreView = (props) => {
+      return (
+        <div className={`score-view-wrapper-leading-${props.leading}`}>
+          <h2>
+            {props.teamName}: {props.score}
+          </h2>
+        </div>
+      );
+    };
+
+    // ScoreKeeper.jsx
+    const ScoreKeeper = () => {
+      const [teamOneScore, setTeamOneScore] = React.useState(0);
+      const [teamTwoScore, setTeamTwoScore] = React.useState(0);
+
+      const resetScores = () => {
+        setTeamOneScore(0);
+        setTeamTwoScore(0);
+      };
+
+      return (
+        <div className="score-keeper-container">
+          <h1 className="score-keeper-heading">Score Keeper</h1>
+          <ScoreView
+            teamName="Team One"
+            score={teamOneScore}
+            leading={teamOneScore > teamTwoScore}
+          />
+          <button
+            className="score-keeper-button"
+            onClick={() => setTeamOneScore(teamOneScore + 1)}
+          >
+            +1 Team One
+          </button>
+          <ScoreView
+            teamName="Team Two"
+            score={teamTwoScore}
+            leading={teamTwoScore > teamOneScore}
+          />
+          <button
+            className="score-keeper-button"
+            onClick={() => setTeamTwoScore(teamTwoScore + 1)}
+          >
+            +1 Team Two
+          </button>
+          <br />
+          <button
+            className="score-keeper-button"
+            onClick={resetScores}
+          >
+            Reset Scores
+          </button>
+        </div>
+      );
+    };
+
+    // App.jsx
+    const App = () => {
+      return <ScoreKeeper />;
+    };
+
+    // Render App
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
