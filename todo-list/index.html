@@ -10,13 +10,14 @@
       background:#000; color:#fff; font-family:"Courier New",monospace;
       font-size:0.9em; overflow:hidden; cursor:none;
     }
-    #terminal { display:flex; flex-direction:column; height:100%; padding:10px; box-sizing:border-box; }
-    #header { white-space:pre-wrap; margin-bottom:1em; }
-    #output { flex:1 1 auto; white-space:pre-wrap; overflow-y:auto; scrollbar-width:none; }
+    #terminal { display:flex; flex-direction:column; height:100%; padding:6px 20px; box-sizing:border-box; }
+    #header { white-space:pre-wrap; margin-bottom:1em; text-align:left; }
+    #output { flex:1 1 auto; white-space:pre-wrap; overflow-y:auto; scrollbar-width:none; width:98%; }
     #output::-webkit-scrollbar { display:none; }
-    #input-line { flex:0 0 auto; display:flex; align-items:center; border-top:1px solid #222; padding-top:6px; }
+    #input-line { flex:0 0 auto; display:flex; align-items:center; border-top:1px solid #222; margin-top:8px; padding-top:8px; }
     #prompt { margin-right:6px; }
     #command { outline:none; white-space:pre; caret-color:transparent; display:inline-block; min-width:1ch; }
+    #command:empty::before { content:" "; color:#000; } /* invisible placeholder */
     #command::after { content:""; display:inline-block; width:8px; height:1em; background:#fff;
       animation:blink 1s steps(1) infinite; vertical-align:bottom; }
     @keyframes blink { 50%{background:transparent;} }
@@ -73,7 +74,7 @@ def remove_task():
     const cmdEl=document.getElementById("command"), outEl=document.getElementById("output");
 
     function sanitize(raw){ return raw.replace(/[\u200B\u200C\u200D]/g,"").replace(/\u00A0/g," ").trim(); }
-    function normalize(){ if(cmdEl.innerText==="") cmdEl.textContent=" "; }
+    function normalize(){ if(cmdEl.innerText==="") cmdEl.textContent=""; }
     let autoStick=true;
     function atBottom(){ return Math.abs(outEl.scrollHeight - outEl.scrollTop - outEl.clientHeight) < 4; }
     function append(txt){ outEl.textContent+=txt; if(autoStick) outEl.scrollTop=outEl.scrollHeight; }
@@ -136,7 +137,7 @@ Enter Your Choice, 1, 2, or 3       `;
     }
 
     cmdEl.addEventListener("keydown",e=>{
-      if(e.key==="Enter"){ e.preventDefault(); const raw=cmdEl.innerText; cmdEl.textContent=" "; runCommand(raw); }
+      if(e.key==="Enter"){ e.preventDefault(); const raw=cmdEl.innerText; cmdEl.textContent=""; runCommand(raw); }
     });
     cmdEl.addEventListener("input",normalize);
 
