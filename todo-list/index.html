@@ -5,10 +5,10 @@
   <title>✅ To Do List</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
-    html, body { height:100%; margin:0; }
+    html, body { height:100%; margin:0; cursor:none; } /* mouse hidden immediately */
     body {
       background:#000; color:#fff; font-family:"Courier New",monospace;
-      font-size:0.9em; overflow:hidden; cursor:none; /* hidden immediately */
+      font-size:0.9em; overflow:hidden;
     }
     #terminal {
       display:flex; flex-direction:column; height:100%;
@@ -25,7 +25,7 @@
     #output::-webkit-scrollbar { display:none; }
     #output::after { content:""; display:block; height:64px; }
     #input-line {
-      flex:0 0 auto; display:flex; align-items:center;
+      flex:0 0 auto; display:flex; align-items:baseline; /* keep prompt & cursor level */
       margin-top:8px; padding-top:4px;
     }
     #prompt { margin-right:6px; }
@@ -36,7 +36,7 @@
     #command:empty::before { content:" "; color:#000; } /* invisible baseline */
     #command.ready::after {
       content:""; display:inline-block; width:8px; height:1em; background:#fff;
-      animation:blink 1s steps(1) infinite; vertical-align:bottom;
+      animation:blink 1s steps(1) infinite; vertical-align:baseline;
     }
     @keyframes blink { 50% { background:transparent; } }
   </style>
