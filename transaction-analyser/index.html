@@ -5,35 +5,67 @@
   <title>📊 Transaction Analyser</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
-    /* Terminal‑style layout */
+    html, body {
+      height:100%; margin:0;
+      cursor:none; /* invisible immediately */
+    }
     body {
-      background: #111; color: #fff;
-      font-family: "Courier New", monospace;
-      margin: 0; height: 100vh; font-size: 0.9em;
+      background:#000; color:#fff;
+      font-family:"Courier New", monospace;
+      font-size:0.9em; overflow:hidden;
     }
     #terminal {
-      position: relative; background: #000; height: 100vh;
-      padding: 10px; border-top: 2px solid #444; box-sizing: border-box;
+      display:flex; flex-direction:column; height:100%;
+      padding:14px 20px 20px 20px; box-sizing:border-box;
     }
-    #header { margin-bottom: 1em; white-space: pre-wrap; }
+    #header {
+      margin-bottom:1em; white-space:pre-wrap; text-align:left;
+    }
     #output {
-      white-space: pre-wrap; overflow-y: auto;
-      height: calc(100vh - 10px - 10px - 1em - 48px);
-      scrollbar-width: none;
+      flex:1 1 auto; white-space:pre-wrap; overflow-y:auto;
+      scrollbar-width:none; padding-bottom:12px;
     }
-    #output::-webkit-scrollbar { display: none; }
-    #output::after { content: ""; display: block; height: 64px; } /* ensures last line never hides */
+    #output::-webkit-scrollbar { display:none; }
+    #output::after { content:""; display:block; height:64px; }
+
+    /* Input line realism */
     #input-line {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      padding: 10px; background: #000; border-top: 1px solid #333;
-      display: flex; align-items: center; height: 48px;
+      flex:0 0 auto;
+      display:inline-flex;
+      align-items:center;
+      margin-top:8px;
+      padding-top:4px;
+      line-height:1em;
     }
-    #prompt { margin-right: 6px; }
+    #prompt, #command {
+      font-family:"Courier New", monospace;
+      font-size:0.9em;
+      line-height:1em;
+      display:inline-flex;
+      align-items:center;
+    }
+    #prompt { margin-right:6px; }
     #command {
-      flex: 1; background: #000; border: none; color: #fff;
-      font-family: inherit; font-size: 1em; outline: none;
-      caret-color: #fff;
+      outline:none;
+      white-space:pre;
+      caret-color:transparent;
+      min-width:1ch;
+      flex:1 1 auto;
     }
+    #command:empty::before {
+      content:"\200B"; /* zero-width space keeps line stable */
+      visibility:hidden;
+    }
+    #command.ready::after {
+      content:"";
+      display:inline-block;
+      width:8px;
+      height:1em;
+      background:#fff;
+      animation:blink 1s steps(1) infinite;
+      margin-left:0;
+    }
+    @keyframes blink { 50% { background:transparent; } }
   </style>
 </head>
 <body>
@@ -41,20 +73,20 @@
     <div id="header"></div>
 
     <div id="output">
-Welcome to Transaction Analyser  
+Welcome to Transaction Analyser
 
-Options:  
+Options:
 
-1. Print summary (type 'print')  
+1. Print summary (type 'print')
 
-2. Analyse transactions (type 'analyse')  
+2. Analyse transactions (type 'analyse')
 
-3. Stop program (type 'stop')  
+3. Stop program (type 'stop')
     </div>
 
     <div id="input-line">
-      <span id="prompt">console >>> </span>
-      <input id="command" type="text" placeholder="Enter your option:" autofocus />
+      <span id="prompt">>>> </span>
+      <span id="command" contenteditable="true"></span>
     </div>
   </div>
 
@@ -87,13 +119,11 @@ def print_summary(transactions):
     print(f"  Deposited: {total_deposited:.2f}  Withdrawn: {total_withdrawn:.2f}  Balance: {balance:.2f}\n")
 
 def analyse_transactions(transactions):
-    # Show full dataset for context
     print("Transactions:")
     for amount, desc in transactions:
         print(f"  {amount:.2f}  {desc}")
     print()
 
-    # Compute averages and extremes
     withdrawals = [t[0] for t in transactions if t[0] <= 0]
     deposits = [t[0] for t in transactions if t[0] >= 0]
     avg_withdrawal = sum(withdrawals)/len(withdrawals) if withdrawals else 0
@@ -108,7 +138,7 @@ def analyse_transactions(transactions):
   </script>
 
   <script>
-    /* Banner shows Python version + real time, refreshed every minute */
+    /* Banner shows Python version + real time */
     function formatDate() {
       const now = new Date();
       return `${now.toDateString()} ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
@@ -116,27 +146,31 @@ def analyse_transactions(transactions):
     function updateHeader() {
       document.getElementById("header").textContent =
 `Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]
-Type "help", "copyright", "credits" or "license" for more information.`;
+Type "help", "credits", "license" or "copyright"
+for more information.`;
     }
     updateHeader(); setInterval(updateHeader, 60000);
 
-    /* Load Pyodide and initialise Python environment */
-    let pyodideInstance = (async () => {
-      let pyodide = await loadPyodide();
+    /* Load Pyodide */
+    let pyodide;
+    async function initPyodide(){
+      pyodide=await loadPyodide();
       await pyodide.runPythonAsync(document.getElementById("py-code").textContent);
-      return pyodide;
-    })();
+      document.getElementById("command").classList.add("ready");
+      document.getElementById("command").focus();
+    }
+    window.addEventListener("load",()=>{ initPyodide(); });
 
-    /* Append text to output and auto-scroll to bottom */
+    /* Append text to output */
     function appendAndStick(text) {
       const out = document.getElementById("output");
       out.textContent += text;
       out.scrollTop = out.scrollHeight;
     }
 
-    /* Interpret user commands and route to Python or built-ins */
-    async function runCommand(cmd) {
-      let pyodide = await pyodideInstance;
+    /* Run commands */
+    async function runCommand(raw) {
+      const cmd = raw.trim().toLowerCase();
       let output = "";
       pyodide.setStdout({ batched: s => output += s });
 
@@ -158,17 +192,26 @@ Type "help", "copyright", "credits" or "license" for more information.`;
         output = "Invalid choice";
       }
 
-      appendAndStick(`\nconsole >>> ${cmd}\n\n${output}`);
+      appendAndStick(`\n>>> ${cmd}\n\n${output}`);
     }
 
-    /* Capture Enter key and send command */
-    document.getElementById("command").addEventListener("keydown", e => {
-      if (e.key === "Enter") {
-        const cmd = e.target.value.trim().toLowerCase();
-        e.target.value = "";
-        runCommand(cmd);
+    /* Capture Enter key */
+    const cmdEl=document.getElementById("command");
+    cmdEl.addEventListener("keydown", async e=>{
+      if(e.key==="Enter"){
+        e.preventDefault();
+        const raw=cmdEl.innerText;
+        cmdEl.textContent="";
+        await runCommand(raw);
       }
+    });
+
+    /* Hybrid mouse trick */
+    let cursorTimer=null;
+    window.addEventListener("mousemove",()=>{
+      document.body.style.cursor="default";
+      clearTimeout(cursorTimer);
+      cursorTimer=setTimeout(()=>{ document.body.style.cursor="none"; },1200);
     });
   </script>
 </body>
-</html>
