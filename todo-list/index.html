@@ -1,72 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>✅ To Do List</title>
-  <!-- Load Pyodide early and synchronously to avoid race conditions -->
-
-  <!-- Preload Pyodide JS and WASM for faster startup -->
-  <link rel="preload" href="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js" as="script">
-  <link rel="preload" href="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.wasm" as="fetch" type="application/wasm" crossorigin>
-
-  <!-- Load Pyodide normally -->
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
-
+  <meta charset="UTF-8" />
+  <title>✅ To Do List (Pyodide)</title>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
   <style>
+    html, body { height:100%; margin:0; }
     body {
-      background: #111;
-      color: #fff;
-      font-family: "Courier New", monospace;
-      margin: 0;
-      height: 100vh;
-      font-size: 0.9em;
+      background:#000; color:#fff; font-family:"Courier New",monospace;
+      font-size:0.9em; overflow:hidden; cursor:none;
     }
-    #terminal {
-      position: relative;
-      background: #000;
-      height: 100vh;
-      padding: 10px;
-      border-top: 2px solid #444;
-      box-sizing: border-box;
-    }
-    #header { margin-bottom: 1em; white-space: pre-wrap; }
-    #output {
-      white-space: pre-wrap;
-      overflow-y: auto;
-      height: calc(100vh - 10px - 10px - 1em - 48px);
-      scrollbar-width: none;
-    }
-    #output::-webkit-scrollbar { display: none; }
-    #output::after { content: ""; display: block; height: 64px; }
-    #input-line {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      padding: 10px; background: #000; border-top: 1px solid #333;
-      display: flex; align-items: center; height: 48px;
-    }
-    #prompt { margin-right: 6px; }
-
-    /* --- Fake block cursor --- */
-    #command {
-      outline: none;
-      white-space: pre;
-      caret-color: transparent;
-      display: inline-block;
-      min-width: 1ch; /* keeps baseline stable when empty */
-      min-width: 1ch;
-    }
+    #terminal { display:flex; flex-direction:column; height:100%; padding:6px 20px; box-sizing:border-box; }
+    #header { white-space:pre-wrap; margin-bottom:1em; text-align:left; }
+    #output { flex:1 1 auto; white-space:pre-wrap; overflow-y:auto; scrollbar-width:none; width:98%; }
+    #output::-webkit-scrollbar { display:none; }
+    #input-line { flex:0 0 auto; display:flex; align-items:center; border-top:1px solid #222; margin-top:10px; padding-top:10px; }
+    #prompt { margin-right:6px; }
+    #command { outline:none; white-space:pre; caret-color:transparent; display:inline-block; min-width:1ch; }
+    #command:empty::before { content:" "; color:#000; } /* invisible baseline placeholder */
     #command::after {
-      content: "";
-      display: inline-block;
-      width: 8px;
-      height: 1em;
-      background: #fff;
-      animation: blink 1s steps(1) infinite;
-      vertical-align: bottom; /* keep aligned with text baseline */
-      vertical-align: bottom;
+      content:""; display:inline-block; width:8px; height:1em; background:#fff;
+      animation:blink 1s steps(1) infinite; vertical-align:bottom;
     }
-    @keyframes blink {
-      50% { background: transparent; }
-    }
+    @keyframes blink { 50% { background:transparent; } }
   </style>
 </head>
 <body>
@@ -87,133 +43,219 @@ Enter Your Choice, 1, 2, or 3
     </div>
     <div id="input-line">
       <span id="prompt">>>> </span>
-@@ -102,126 +108,121 @@
+      <span id="command" contenteditable="true"></span>
+    </div>
+  </div>
+
+  <!-- Python logic runs inside Pyodide -->
+  <script id="py-code" type="text/plain">
+_output = []
+def py_print(*args):
+    _output.append(" ".join(str(a) for a in args))
+
+def flush_output():
+    s = "\n".join(_output)
+    _output.clear()
+    return s
+
+todo_list = []
+
+def add_task(task):
+    todo_list.append(task)
+    py_print(f"Task '{task}' added")
+
+def remove_task():
+    if todo_list:
         removed = todo_list.pop()
-        print(f"Task '{removed}' removed from the To Do List")
+        py_print(f"Task '{removed}' removed")
     else:
-        print("Your To Do List is empty")
-    print()
+        py_print("Your To Do List is empty")
   </script>
 
   <script>
-    /* --- Banner --- */
+    // Elements
+    const cmdEl = document.getElementById("command");
+    const outEl = document.getElementById("output");
+
+    // Sticky-bottom output
+    let autoStick = true;
+    function atBottom() {
+      return Math.abs(outEl.scrollHeight - outEl.scrollTop - outEl.clientHeight) < 4;
+    }
+    function append(txt) {
+      outEl.textContent += txt;
+      if (autoStick) outEl.scrollTop = outEl.scrollHeight;
+    }
+    outEl.addEventListener("scroll", () => { autoStick = atBottom(); });
+
+    // Sanitize contenteditable quirks
+    function sanitize(raw) {
+      return raw
+        .replace(/[\u200B\u200C\u200D]/g, "") // zero-width
+        .replace(/\u00A0/g, " ")             // non-breaking space
+        .replace(/\r?\n/g, "")               // stray newlines
+        .trim();
+    }
+
+    // Pyodide init
+    let pyReady = false;
+    let pyodide;
+    async function initPyodide() {
+      pyodide = await loadPyodide();
+      await pyodide.runPython(document.getElementById("py-code").textContent);
+      pyReady = true;
+      flushQueue();
+    }
+
+    // Call Python and get fresh buffered output
+    function runPy(code) {
+      // In Pyodide, runPython returns the last expression value.
+      // We chain flush_output() to return a fresh string each time.
+      return pyodide.runPython(code);
+    }
+    function addTask(task) {
+      return runPy(`add_task(${JSON.stringify(task)}); flush_output()`);
+    }
+    function removeTask() {
+      return runPy(`remove_task(); flush_output()`);
+    }
+
+    // Menu text to reprint after Quit (no welcome)
+    const MENU_TEXT = `
+
+Options:  
+
+1. Add Task  
+
+2. Remove Task  
+
+3. Quit  
+
+Enter Your Choice, 1, 2, or 3       `;
+
+    // Command state
+    let awaitingTask = false;
+    function isMenuCommand(c) {
+      return ["1","2","3","help","credits","license","copyright"].includes(c);
+    }
+
+    // Queue commands until Pyodide is ready
+    const queue = [];
+    function enqueue(raw) { queue.push(raw); }
+    function flushQueue() {
+      while (queue.length) {
+        const raw = queue.shift();
+        processCommand(raw, /*echo*/ false);
+      }
+    }
+
+    // Core processor (can echo or not)
+    function processCommand(raw, echo = true) {
+      const original = sanitize(raw);
+      const low = original.toLowerCase();
+
+      if (echo) append(`\n>>> ${original}\n\n`);
+      if (!low) return;
+
+      // Menu commands have priority
+      if (isMenuCommand(low)) {
+        awaitingTask = false;
+
+        if (low === "1") {
+          append("Enter task");
+          awaitingTask = true;
+          return;
+        }
+        if (low === "2") {
+          append(removeTask());
+          return;
+        }
+        if (low === "3") {
+          // Clear list and reprint menu, no welcome
+          pyodide.runPython("todo_list.clear()");
+          append("Your To Do List is empty" + MENU_TEXT);
+          return;
+        }
+        if (low === "help") {
+          append("Type the number of an option to execute it.\n\n1 = Add a task\n2 = Remove the last task\n3 = Quit the program");
+          return;
+        }
+        if (low === "credits") {
+          append("This was originally created on Mimo.");
+          return;
+        }
+        if (low === "license") {
+          append("Python is distributed under the PSF License.\nSee https://docs.python.org/3/license.html for details.");
+          return;
+        }
+        if (low === "copyright") {
+          append("Copyright (c) 2001-2025 Python Software Foundation.\nAll Rights Reserved.");
+          return;
+        }
+      }
+
+      // If we were prompted to add a task, and the input isn't a command, treat it as the task name
+      if (awaitingTask) {
+        const task = original; // preserve original casing/spaces
+        append(addTask(task));
+        awaitingTask = false;
+        return;
+      }
+
+      // Anything else is invalid
+      append("Input not recognized, please type a valid input");
+    }
+
+    // Public entrypoint: handles readiness and echo
+    function runCommand(raw) {
+      if (!pyReady) {
+        append(`\n>>> ${sanitize(raw)}\n\n`);
+        enqueue(raw);
+        return;
+      }
+      processCommand(raw, /*echo*/ true);
+    }
+
+    // Input handling
+    function normalize() { if (cmdEl.innerText === "") cmdEl.textContent = ""; }
+    cmdEl.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const raw = cmdEl.innerText;
+        cmdEl.textContent = ""; // seamless prompt
+        runCommand(raw);
+      }
+    });
+    cmdEl.addEventListener("input", normalize);
+
+    // Header (permanent info like Pyodide)
     function formatDate() {
-      const now = new Date();
-      return `${now.toDateString()} ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
+      const n = new Date();
+      return `${n.toDateString()} ${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`;
     }
     function updateHeader() {
       document.getElementById("header").textContent =
 `Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]
-Type "help", "copyright", "credits" or "license" for more information.`;
+Type "help", "credits", "license", "copyright"
+for more information.`;
     }
-    updateHeader(); setInterval(updateHeader, 60000);
+    updateHeader();
+    setInterval(updateHeader, 60000);
 
-    /* --- Input + cursor baseline stability --- */
-    const cmdEl = document.getElementById("command");
-
-    function sanitizeInput(raw) {
-      // Remove zero-width (ZWSP, ZWNJ, ZWJ), NBSP and normal spaces at ends
-      return raw
-        .replace(/[\u200B\u200C\u200D]/g, "")  // zero-width chars
-        .replace(/\u00A0/g, " ")               // non-breaking space -> space
-        .trim()
-        .toLowerCase();
-    }
-
-    // Keep a tiny buffer so baseline never collapses underneath
-    function normalizeCommand() {
-      if (cmdEl.innerText === "") {
-        // Use a normal space; visually invisible next to prompt, keeps baseline stable
-        cmdEl.textContent = " ";
-        cmdEl.textContent = " "; // buffer space keeps cursor level
-      }
-    }
-
-    /* --- Output handling --- */
-    function appendAndStick(text) {
-      const out = document.getElementById("output");
-      out.textContent += text;
-      out.scrollTop = out.scrollHeight;
-    }
-
-    /* --- Pyodide bootstrap --- */
-    let pyodideInstance = null;
-    let commandQueue = [];
-    async function initPyodide() {
-      try {
-        const pyodide = await loadPyodide();
-        await pyodide.runPythonAsync(document.getElementById("py-code").textContent);
-        pyodideInstance = pyodide;
-        // Replay queued commands
-        const queued = commandQueue.slice();
-        commandQueue = [];
-        for (const q of queued) {
-          await runCommand(q);
-        }
-      } catch (e) {
-        appendAndStick(`\n[Error] Python failed to load. Try refreshing.\n`);
-        console.error(e);
-      }
-    }
-
-    /* --- Command handler --- */
-    let awaitingTask = false;
-
-    async function runCommand(cmdRaw) {
-      const cmd = sanitizeInput(cmdRaw);
-      if (!cmd) return; // ignore empty/no-op submissions
-      if (!cmd) return;
-
-      if (!pyodideInstance) {
-        // Buffer until Python is ready
-        commandQueue.push(cmd);
-        // Provide immediate feedback so it feels live
-        appendAndStick(`\n>>> ${cmd}\n\n[Loading Python... command queued]\n`);
-        return;
-      }
-
-      let output = "";
-      pyodideInstance.setStdout({ batched: s => output += s });
-
-      if (awaitingTask) {
-        await pyodideInstance.runPythonAsync(`add_task(${JSON.stringify(cmd)})`);
-        awaitingTask = false;
-        appendAndStick(`\n>>> ${cmd}\n\n${output}`);
-        return;
-      }
-
-      if (cmd === "1") {
-        output = "Adding task\n\nEnter the task:";
-        awaitingTask = true;
-      } else if (cmd === "2") {
-        output = "Removing task\n\n";
-        await pyodideInstance.runPythonAsync("remove_task()");
-      } else if (cmd === "3") {
-        await pyodideInstance.runPythonAsync("todo_list.clear()");
-        output = "Quitting\n\nYour To Do List is empty";
-      } else if (cmd === "help") {
-        output = "Type the number of an option to execute it.\n\n1 = Add a task\n2 = Remove the last task\n3 = Quit the program";
-      } else if (cmd === "credits") {
-        output = "This was originally created on Mimo.";
-      } else if (cmd === "copyright") {
-        output = "Copyright (c) 2001-2025 Python Software Foundation.\nAll Rights Reserved.";
-      } else if (cmd === "license") {
-        output = "Python is distributed under the PSF License.\nSee https://docs.python.org/3/license.html for details.";
-      } else {
-        output = "Invalid choice";
-      }
-
-      appendAndStick(`\n>>> ${cmd}\n\n${output}`);
-    }
-
-    /* --- Key handling --- */
-    cmdEl.addEventListener("keydown", e => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        e.stopPropagation();
-        const raw = cmdEl.innerText;
-        cmdEl.textContent = " "; // reset buffer to keep baseline stable
-        cmdEl.textContent = " "; // reset buffer
-        runCommand(raw);
-      }
+    // Init + focus
+    window.addEventListener("load", () => {
+      normalize();
+      cmdEl.focus();
+      initPyodide();
     });
+
+    // Hidden mouse trick: show briefly on movement
+    let cursorTimer = null;
+    window.addEventListener("mousemove", () => {
+      document.body.style.cursor = "default";
+      clearTimeout(cursorTimer);
+      cursorTimer = setTimeout(() => { document.body.style.cursor = "none"; }, 1200);
+    });
+  </script>
+</body>
+</html>
