@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>✅ To Do List</title>
-  <!-- Load Pyodide early and synchronously to avoid race conditions -->
+
+  <!-- Preload Pyodide JS and WASM for faster startup -->
+  <link rel="preload" href="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js" as="script">
+  <link rel="preload" href="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.wasm" as="fetch" type="application/wasm" crossorigin>
+
+  <!-- Load Pyodide normally -->
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+
   <style>
     body {
       background: #111;
@@ -44,7 +50,7 @@
       white-space: pre;
       caret-color: transparent;
       display: inline-block;
-      min-width: 1ch; /* keeps baseline stable when empty */
+      min-width: 1ch;
     }
     #command::after {
       content: "";
@@ -53,7 +59,7 @@
       height: 1em;
       background: #fff;
       animation: blink 1s steps(1) infinite;
-      vertical-align: bottom; /* keep aligned with text baseline */
+      vertical-align: bottom;
     }
     @keyframes blink {
       50% { background: transparent; }
@@ -123,7 +129,6 @@ Type "help", "copyright", "credits" or "license" for more information.`;
     const cmdEl = document.getElementById("command");
 
     function sanitizeInput(raw) {
-      // Remove zero-width (ZWSP, ZWNJ, ZWJ), NBSP and normal spaces at ends
       return raw
         .replace(/[\u200B\u200C\u200D]/g, "")  // zero-width chars
         .replace(/\u00A0/g, " ")               // non-breaking space -> space
@@ -131,11 +136,9 @@ Type "help", "copyright", "credits" or "license" for more information.`;
         .toLowerCase();
     }
 
-    // Keep a tiny buffer so baseline never collapses underneath
     function normalizeCommand() {
       if (cmdEl.innerText === "") {
-        // Use a normal space; visually invisible next to prompt, keeps baseline stable
-        cmdEl.textContent = " ";
+        cmdEl.textContent = " "; // buffer space keeps cursor level
       }
     }
 
@@ -171,12 +174,10 @@ Type "help", "copyright", "credits" or "license" for more information.`;
 
     async function runCommand(cmdRaw) {
       const cmd = sanitizeInput(cmdRaw);
-      if (!cmd) return; // ignore empty/no-op submissions
+      if (!cmd) return;
 
       if (!pyodideInstance) {
-        // Buffer until Python is ready
         commandQueue.push(cmd);
-        // Provide immediate feedback so it feels live
         appendAndStick(`\n>>> ${cmd}\n\n[Loading Python... command queued]\n`);
         return;
       }
@@ -221,7 +222,7 @@ Type "help", "copyright", "credits" or "license" for more information.`;
         e.preventDefault();
         e.stopPropagation();
         const raw = cmdEl.innerText;
-        cmdEl.textContent = " "; // reset buffer to keep baseline stable
+        cmdEl.textContent = " "; // reset buffer
         runCommand(raw);
       }
     });
