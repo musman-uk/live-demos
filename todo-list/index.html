@@ -48,14 +48,12 @@
   vertical-align: bottom;
 }
 
-@keyframes blink {
-  50% { background: transparent; }
-}
-
     #command {
      outline: none;
      white-space: pre;       /* preserve spaces */
      caret-color: transparent; /* hide native caret */
+     display: inline-block;
+     min-width: 1px; /* keeps it clickable when empty */
   }
     #command::after {
     content: "";
