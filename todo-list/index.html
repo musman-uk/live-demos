@@ -5,7 +5,7 @@
   <title>✅ To Do List</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
-    html, body { height:100%; margin:0; cursor:none; } /* mouse hidden immediately */
+    html, body { height:100%; margin:0; cursor:none; } /* CSS fallback */
     body {
       background:#000; color:#fff; font-family:"Courier New",monospace;
       font-size:0.9em; overflow:hidden;
@@ -16,7 +16,7 @@
     }
     #header {
       margin-bottom:1em; white-space:pre-wrap; text-align:left;
-      border-bottom:1px solid #333; padding-bottom:6px;
+      /* no border line for realism */
     }
     #output {
       flex:1 1 auto; white-space:pre-wrap; overflow-y:auto;
@@ -41,7 +41,7 @@
     @keyframes blink { 50% { background:transparent; } }
   </style>
 </head>
-<body>
+<body style="cursor:none;"> <!-- inline style hides mouse instantly -->
   <div id="terminal">
     <div id="header"></div>
     <div id="output">
@@ -87,11 +87,10 @@ def remove_task():
 
     function sanitize(raw){ return raw.replace(/[\u200B\u200C\u200D]/g,"").replace(/\u00A0/g," ").replace(/\r?\n/g,"").trim(); }
 
-    let pyodide, pyReady=false;
+    let pyodide;
     async function initPyodide(){
       pyodide=await loadPyodide();
       await pyodide.runPythonAsync(document.getElementById("py-code").textContent);
-      pyReady=true;
       cmdEl.classList.add("ready"); // show cursor now
       cmdEl.focus(); // allow immediate typing
     }
