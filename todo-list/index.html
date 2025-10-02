@@ -37,6 +37,21 @@
       display: flex; align-items: center; height: 48px;
     }
     #prompt { margin-right: 6px; }
+    #prompt::after {
+  content: " ";
+  display: inline-block;
+  width: 8px;
+  height: 1em;
+  background: #fff;
+  margin-left: 2px;
+  animation: blink 1s steps(1) infinite;
+  vertical-align: bottom;
+}
+
+@keyframes blink {
+  50% { background: transparent; }
+}
+
     #command {
       flex: 1; background: #000; border: none; color: #fff;
       font-family: inherit; font-size: 1em; outline: none;
@@ -48,6 +63,7 @@
   <div id="terminal">
     <div id="header"></div>
     <div id="output">
+
 Welcome to To Do List  
 
 Options:  
@@ -59,7 +75,7 @@ Options:
 3. Quit  
     </div>
     <div id="input-line">
-      <span id="prompt">console >>> </span>
+      <span id="prompt">>>> </span>
       <input id="command" type="text" placeholder="Enter your choice 1, 2, or 3:" autofocus />
     </div>
   </div>
