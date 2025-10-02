@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>🐾 Pixel Paws</title>
   <style>
-    /* --- Global Styles --- */
+    /* Global styles: simple, playful palette and centered layout to keep focus on the pets */
     body {
       font-family: Arial, sans-serif;
       text-align: center;
@@ -18,7 +18,7 @@
       color: darkslategray;
     }
 
-    /* --- Pet Container --- */
+    /* Pet container: flex layout allows pets to wrap and stay evenly spaced */
     .pet-container {
       display: flex;
       flex-wrap: wrap;
@@ -26,6 +26,7 @@
       margin-top: 40px;
     }
 
+    /* Individual pet card: styled as a clickable tile with hover feedback via border */
     .pet {
       cursor: pointer;
       background-color: white;
@@ -36,6 +37,7 @@
       transition: border 0.2s ease;
     }
 
+    /* Selected pet: teal border provides clear visual feedback of active choice */
     .pet.selected {
       border: 3px solid teal;
     }
@@ -45,7 +47,7 @@
       margin-top: 10px;
     }
 
-    /* --- Treats --- */
+    /* Treats container: horizontally centered row of treat options */
     .treat-container {
       display: flex;
       justify-content: center;
@@ -56,6 +58,7 @@
       margin: 0 20px;
     }
 
+    /* Treats: enlarged on hover to reinforce interactivity */
     .treat {
       font-size: 40px;
       cursor: pointer;
@@ -66,7 +69,7 @@
       transform: scale(1.2);
     }
 
-    /* --- Footer Credit --- */
+    /* Footer: fixed credit, styled subtly so it’s visible without distracting from gameplay */
     footer {
       position: fixed;
       bottom: 8px;
@@ -82,7 +85,7 @@
 <body>
   <h1>Pixel Paws</h1>
 
-  <!-- Pet selection area -->
+  <!-- Pet selection area: players choose which pet to interact with -->
   <div class="pet-container">
     <div class="pet" id="pet1" onclick="selectPet(1)">
       <div class="emoji">&#128049;</div>
@@ -96,7 +99,7 @@
     </div>
   </div>
 
-  <!-- Treats to feed pets -->
+  <!-- Treats: different amounts of food to feed the selected pet -->
   <div class="treat-container">
     <div class="treat-wrapper">
       <div class="emoji treat" onclick="feedPet(1)">🍖</div>
@@ -106,13 +109,13 @@
     </div>
   </div>
 
-  <!-- credit footer -->
+  <!-- Attribution footer -->
   <footer>
     Originally created and hosted via Mimo
   </footer>
 
   <script>
-    /* --- Pet Class --- */
+    /* Pet class: encapsulates state and behavior for each pet instance */
     class Pet {
       constructor(id) {
         this.id = id;
@@ -122,19 +125,20 @@
         this.displayElement = document.getElementById(`pet${id}`);
       }
 
-      // Increase fed level when given a treat
+      // Feeding increases saturation; capped at 100 to prevent overflow
       feed(amount) {
         this.fedLevel += amount;
         if (this.fedLevel > 100) this.fedLevel = 100;
         this.fedElement.textContent = this.fedLevel;
       }
 
-      // Decrease fed level over time
+      // Hunger mechanic: decreases saturation periodically and updates UI state
       decreaseFedLevel() {
         this.fedLevel -= 10;
         if (this.fedLevel < 0) this.fedLevel = 0;
         this.fedElement.textContent = this.fedLevel;
 
+        // When saturation hits zero, pet “runs away” (visual + message feedback)
         if (this.fedLevel === 0) {
           this.messageElement.textContent = "Pet ran away";
           this.displayElement.style.opacity = 0.5;
@@ -145,7 +149,7 @@
       }
     }
 
-    /* --- Global State --- */
+    /* Global state: track which pet is currently selected */
     let selectedPet = null;
     const petElement1 = document.getElementById("pet1");
     const petElement2 = document.getElementById("pet2");
@@ -153,7 +157,7 @@
     const pet1 = new Pet(1);
     const pet2 = new Pet(2);
 
-    // Select which pet to feed
+    // Selection logic: ensures only one pet is active at a time
     function selectPet(id) {
       petElement1.classList.remove("selected");
       petElement2.classList.remove("selected");
@@ -166,7 +170,7 @@
       }
     }
 
-    // Feed the currently selected pet
+    // Feeding logic: routes treat to whichever pet is currently selected
     function feedPet(amount) {
       if (selectedPet === 1) {
         pet1.feed(amount);
@@ -175,13 +179,13 @@
       }
     }
 
-    // Decrease fed levels periodically
+    // Game loop: decreases fed levels every 5 seconds to simulate time passing
     setInterval(() => {
       pet1.decreaseFedLevel();
       pet2.decreaseFedLevel();
     }, 5000);
 
-    // Default selection: Pet 1
+    // Default state: Pet 1 is selected on load for immediate interaction
     selectPet(1);
   </script>
 </body>
