@@ -5,7 +5,7 @@
   <title>✅ To Do List</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
-    html, body { height:100%; margin:0; cursor:none; } /* CSS fallback */
+    html, body { height:100%; margin:0; cursor:none; }
     body {
       background:#000; color:#fff; font-family:"Courier New",monospace;
       font-size:0.9em; overflow:hidden;
@@ -16,7 +16,6 @@
     }
     #header {
       margin-bottom:1em; white-space:pre-wrap; text-align:left;
-      /* no border line for realism */
     }
     #output {
       flex:1 1 auto; white-space:pre-wrap; overflow-y:auto;
@@ -24,24 +23,50 @@
     }
     #output::-webkit-scrollbar { display:none; }
     #output::after { content:""; display:block; height:64px; }
+
+    /* Input line perfection */
     #input-line {
-      flex:0 0 auto; display:flex; align-items:baseline; /* keep prompt & cursor level */
-      margin-top:8px; padding-top:4px;
+      flex:0 0 auto;
+      display:inline-flex;       /* single box */
+      align-items:center;        /* vertical lock */
+      margin-top:8px;
+      padding-top:4px;
+      line-height:1em;
     }
-    #prompt { margin-right:6px; }
+    #prompt, #command {
+      font-family:"Courier New", monospace;
+      font-size:0.9em;
+      line-height:1em;
+      display:inline-flex;
+      align-items:center;
+    }
+    #prompt {
+      margin-right:6px;
+    }
     #command {
-      outline:none; white-space:pre; caret-color:transparent;
-      display:inline-block; min-width:1ch; flex:1 1 auto;
+      outline:none;
+      white-space:pre;
+      caret-color:transparent;
+      min-width:1ch;
+      flex:1 1 auto;
     }
-    #command:empty::before { content:" "; color:#000; } /* invisible baseline */
+    #command:empty::before {
+      content:"\200B";           /* zero-width space keeps line stable */
+      visibility:hidden;
+    }
     #command.ready::after {
-      content:""; display:inline-block; width:8px; height:1em; background:#fff;
-      animation:blink 1s steps(1) infinite; vertical-align:baseline;
+      content:"";
+      display:inline-block;
+      width:8px;
+      height:1em;
+      background:#fff;
+      animation:blink 1s steps(1) infinite;
+      margin-left:0;
     }
     @keyframes blink { 50% { background:transparent; } }
   </style>
 </head>
-<body style="cursor:none;"> <!-- inline style hides mouse instantly -->
+<body style="cursor:none;">
   <div id="terminal">
     <div id="header"></div>
     <div id="output">
@@ -91,8 +116,8 @@ def remove_task():
     async function initPyodide(){
       pyodide=await loadPyodide();
       await pyodide.runPythonAsync(document.getElementById("py-code").textContent);
-      cmdEl.classList.add("ready"); // show cursor now
-      cmdEl.focus(); // allow immediate typing
+      cmdEl.classList.add("ready");
+      cmdEl.focus();
     }
 
     async function pyRunAndCapture(code){
