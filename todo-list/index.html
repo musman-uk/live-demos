@@ -74,19 +74,24 @@ def remove_task():
 
     function sanitize(raw){ return raw.replace(/[\u200B\u200C\u200D]/g,"").replace(/\u00A0/g," ").trim(); }
     function normalize(){ if(cmdEl.innerText==="") cmdEl.textContent=" "; }
-    function append(txt){ outEl.textContent+=txt; if(autoStick) outEl.scrollTop=outEl.scrollHeight; }
-
-    // Auto-stick unless user scrolls up
     let autoStick=true;
     function atBottom(){ return Math.abs(outEl.scrollHeight - outEl.scrollTop - outEl.clientHeight) < 4; }
+    function append(txt){ outEl.textContent+=txt; if(autoStick) outEl.scrollTop=outEl.scrollHeight; }
     outEl.addEventListener("scroll",()=>{ autoStick=atBottom(); });
 
     // MicroPython stdout capture
-    window.mp_js_stdout_buffer=""; window.mp_js_stdout=s=>{ window.mp_js_stdout_buffer+=s; };
+    window.mp_js_stdout_buffer="";
+    window.mp_js_stdout=s=>{ window.mp_js_stdout_buffer+=s; };
     function initMicroPython(){ mp_js_init(128*1024); mp_js_do_str(document.getElementById("py-code").textContent); }
-    function flushPy(){ window.mp_js_stdout_buffer=""; mp_js_do_str("print(flush_output())"); const s=window.mp_js_stdout_buffer; window.mp_js_stdout_buffer=""; return s; }
+    function flushPy(){
+      window.mp_js_stdout_buffer="";
+      mp_js_do_str("print(flush_output())");
+      const s=window.mp_js_stdout_buffer;
+      window.mp_js_stdout_buffer="";
+      return s;
+    }
+    function runPy(code){ mp_js_do_str(code); return flushPy(); }
 
-    let awaitingTask=false;
     const MENU_TEXT = `
 
 Options:  
@@ -99,45 +104,35 @@ Options:
 
 Enter Your Choice, 1, 2, or 3       `;
 
-    function runCommand(raw){
-      const cmd=sanitize(raw).toLowerCase();
-      append(`\n>>> ${cmd}\n\n`);
-      if(!cmd) return;
+    let awaitingTask=false;
+    function isMenuCommand(c){
+      return ["1","2","3","help","credits","license","copyright"].includes(c);
+    }
 
-      if(awaitingTask && !["1","2","3","help","credits","license","copyright"].includes(cmd)){
-        mp_js_do_str(`add_task(${JSON.stringify(cmd)})`);
-        append(flushPy());
+    function runCommand(raw){
+      const cmd=sanitize(raw);
+      const low=cmd.toLowerCase();
+      append(`\n>>> ${cmd}\n\n`);
+      if(!low) return;
+
+      if(isMenuCommand(low)){
+        awaitingTask=false;
+        if(low==="1"){ append("Enter task"); awaitingTask=true; return; }
+        if(low==="2"){ append(runPy("remove_task()")); return; }
+        if(low==="3"){ mp_js_do_str("todo_list.clear()"); append("Your To Do List is empty"+MENU_TEXT); return; }
+        if(low==="help"){ append("Type the number of an option to execute it.\n\n1 = Add a task\n2 = Remove the last task\n3 = Quit the program"); return; }
+        if(low==="credits"){ append("This was originally created on Mimo."); return; }
+        if(low==="license"){ append("Python is distributed under the PSF License.\nSee https://docs.python.org/3/license.html for details."); return; }
+        if(low==="copyright"){ append("Copyright (c) 2001-2025 Python Software Foundation.\nAll Rights Reserved."); return; }
+      }
+
+      if(awaitingTask){
+        append(runPy(`add_task(${JSON.stringify(cmd)})`));
         awaitingTask=false;
         return;
       }
 
-      if(cmd==="1"){
-        append("Enter task you would like to add");
-        awaitingTask=true;
-      }
-      else if(cmd==="2"){
-        mp_js_do_str("remove_task()");
-        append(flushPy());
-      }
-      else if(cmd==="3"){
-        mp_js_do_str("todo_list.clear()");
-        append("Your To Do List is empty"+MENU_TEXT);
-      }
-      else if(cmd==="help"){
-        append("Type the number of an option to execute it.\n\n1 = Add a task\n2 = Remove the last task\n3 = Quit the program");
-      }
-      else if(cmd==="credits"){
-        append("This was originally created on Mimo.");
-      }
-      else if(cmd==="license"){
-        append("Python is distributed under the PSF License.\nSee https://docs.python.org/3/license.html for details.");
-      }
-      else if(cmd==="copyright"){
-        append("Copyright (c) 2001-2025 Python Software Foundation.\nAll Rights Reserved.");
-      }
-      else {
-        append("Input not recognized, please type a valid input");
-      }
+      append("Input not recognized, please type a valid input");
     }
 
     cmdEl.addEventListener("keydown",e=>{
@@ -145,7 +140,7 @@ Enter Your Choice, 1, 2, or 3       `;
     });
     cmdEl.addEventListener("input",normalize);
 
-    // Banner with permanent help/credits/license/copyright
+    // Header
     function formatDate(){
       const n=new Date();
       return `${n.toDateString()} ${n.getHours().toString().padStart(2,"0")}:${n.getMinutes().toString().padStart(2,"0")}`;
@@ -160,7 +155,7 @@ for more information.`;
 
     window.addEventListener("load",()=>{ normalize(); cmdEl.focus(); initMicroPython(); });
 
-    // Hidden mouse trick: show briefly on movement
+    // Hidden mouse trick
     let cursorTimer=null;
     window.addEventListener("mousemove",()=>{
       document.body.style.cursor="default";
