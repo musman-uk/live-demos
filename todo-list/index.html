@@ -164,17 +164,10 @@ Type "help", "copyright", "credits" or "license" for more information.`;
     }
 
     let awaitingTask = false;
-    let commandQueue = [];
 
     function runCommand(cmdRaw) {
       const cmd = sanitizeInput(cmdRaw);
-      if (!cmd) return;
-
-      if (!mpReady) {
-        appendAndStick(`\n>>> ${cmd}\n\n[Loading Python... command queued]\n`);
-        commandQueue.push(cmd);
-        return;
-      }
+      if (!cmd || !mpReady) return;
 
       let output = "";
       pyStdout = "";
@@ -226,14 +219,6 @@ Type "help", "copyright", "credits" or "license" for more information.`;
       normalizeCommand();
       cmdEl.focus();
       initMicroPython();
-      const checkReady = setInterval(() => {
-        if (mpReady) {
-          clearInterval(checkReady);
-          const pending = commandQueue.slice();
-          commandQueue = [];
-          pending.forEach(runCommand);
-        }
-      }, 50);
     });
   </script>
 </body>
