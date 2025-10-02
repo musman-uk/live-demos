@@ -7,19 +7,32 @@
   <style>
     html, body { height:100%; margin:0; }
     body {
-      background:#111; color:#fff; font-family:"Courier New",monospace;
+      background:#000; color:#fff; font-family:"Courier New",monospace;
       font-size:0.9em; overflow:hidden; cursor:none;
     }
-    #terminal { display:flex; flex-direction:column; height:100%; padding:6px 20px; box-sizing:border-box; }
-    #header { margin-bottom:1em; white-space:pre-wrap; text-align:left; }
-    #output { flex:1 1 auto; white-space:pre-wrap; overflow-y:auto; scrollbar-width:none; }
+    #terminal {
+      display:flex; flex-direction:column; height:100%;
+      padding:14px 20px 0 20px; box-sizing:border-box; background:#000;
+    }
+    #header {
+      margin-bottom:1em; white-space:pre-wrap; text-align:left;
+      border-bottom:1px solid #333; padding-bottom:6px;
+    }
+    #output {
+      flex:1 1 auto; white-space:pre-wrap; overflow-y:auto;
+      scrollbar-width:none; padding-bottom:12px;
+    }
     #output::-webkit-scrollbar { display:none; }
     #output::after { content:""; display:block; height:64px; }
-    #input-line { flex:0 0 auto; display:flex; align-items:center; border-top:1px solid #333; margin-top:10px; padding-top:10px; }
+    #input-line {
+      flex:0 0 auto; display:flex; align-items:center;
+      margin-top:8px; /* just spacing, no border */
+      padding-top:4px;
+    }
     #prompt { margin-right:6px; }
     #command {
       outline:none; white-space:pre; caret-color:transparent;
-      display:inline-block; min-width:1ch;
+      display:inline-block; min-width:1ch; flex:1 1 auto;
     }
     #command:empty::before { content:" "; color:#000; }
     #command.ready::after {
@@ -67,10 +80,9 @@ def remove_task():
   </script>
 
   <script>
-    const cmdEl = document.getElementById("command");
-    const outEl = document.getElementById("output");
+    const cmdEl=document.getElementById("command"), outEl=document.getElementById("output");
 
-    let autoStick = true;
+    let autoStick=true;
     function appendAndStick(txt){ outEl.textContent+=txt; if(autoStick) outEl.scrollTop=outEl.scrollHeight; }
     outEl.addEventListener("scroll",()=>{ autoStick=Math.abs(outEl.scrollHeight-outEl.scrollTop-outEl.clientHeight)<4; });
 
@@ -81,7 +93,8 @@ def remove_task():
       pyodide=await loadPyodide();
       await pyodide.runPythonAsync(document.getElementById("py-code").textContent);
       pyReady=true;
-      cmdEl.classList.add("ready"); // show cursor only now
+      cmdEl.classList.add("ready"); // show cursor now
+      cmdEl.focus(); // allow immediate typing
     }
 
     async function pyRunAndCapture(code){
@@ -122,7 +135,7 @@ def remove_task():
     function updateHeader(){ document.getElementById("header").textContent=`Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]\nType "help", "credits", "license", "copyright"\nfor more information.`;}
     updateHeader(); setInterval(updateHeader,60000);
 
-    window.addEventListener("load",()=>{ cmdEl.focus(); initPyodide(); });
+    window.addEventListener("load",()=>{ initPyodide(); });
 
     // Hidden mouse trick
     let cursorTimer=null;
