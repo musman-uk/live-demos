@@ -140,7 +140,7 @@ def analyse_transactions(transactions):
 Type "help", "credits", "license" or "copyright"
 for more information.`;
     }
-    updateHeader(); setInterval(updateHeader, 1000); 
+    updateHeader(); setInterval(updateHeader, 1000); // refresh every second so minutes flip on time
 
     /* Initialize Pyodide and preload Python code to avoid first-command delay */
     let pyodide;
@@ -203,4 +203,8 @@ for more information.`;
     window.addEventListener("mousemove",()=>{
       document.body.style.cursor="default";
       clearTimeout(cursorTimer);
-      cursorTimer=setTimeout(()=>{ document.body.style.cursor="
+      cursorTimer=setTimeout(()=>{ document.body.style.cursor="none"; },1200);
+    });
+  </script>
+</body>
+</html>
