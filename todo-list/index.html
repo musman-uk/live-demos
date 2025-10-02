@@ -5,21 +5,23 @@
   <title>✅ To Do List</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
-    html, body {
-      height:100%; margin:0;
-      cursor:none; /* invisible immediately */
-    }
+    /* Full-screen terminal aesthetic; cursor hidden to emphasize keyboard-driven interaction */
+    html, body { height:100%; margin:0; cursor:none; }
     body {
       background:#000; color:#fff; font-family:"Courier New",monospace;
       font-size:0.9em; overflow:hidden;
     }
+
+    /* Column layout: header, scrollable output, fixed input line */
     #terminal {
       display:flex; flex-direction:column; height:100%;
       padding:14px 20px 20px 20px; box-sizing:border-box; background:#000;
     }
-    #header {
-      margin-bottom:1em; white-space:pre-wrap; text-align:left;
-    }
+
+    /* Header mirrors a Python REPL banner; left-aligned for authenticity */
+    #header { margin-bottom:1em; white-space:pre-wrap; text-align:left; }
+
+    /* Output hides native scrollbars for immersion; bottom spacer prevents overlap with input */
     #output {
       flex:1 1 auto; white-space:pre-wrap; overflow-y:auto;
       scrollbar-width:none; padding-bottom:12px;
@@ -27,42 +29,26 @@
     #output::-webkit-scrollbar { display:none; }
     #output::after { content:""; display:block; height:64px; }
 
-    /* Input line perfection */
+    /* Prompt + editable command area; custom block cursor added when ready */
     #input-line {
-      flex:0 0 auto;
-      display:inline-flex;
-      align-items:center;
-      margin-top:8px;
-      padding-top:4px;
-      line-height:1em;
+      flex:0 0 auto; display:inline-flex; align-items:center;
+      margin-top:8px; padding-top:4px; line-height:1em;
     }
     #prompt, #command {
-      font-family:"Courier New", monospace;
-      font-size:0.9em;
-      line-height:1em;
-      display:inline-flex;
-      align-items:center;
+      font-family:"Courier New", monospace; font-size:0.9em; line-height:1em;
+      display:inline-flex; align-items:center;
     }
     #prompt { margin-right:6px; }
     #command {
-      outline:none;
-      white-space:pre;
-      caret-color:transparent;
-      min-width:1ch;
-      flex:1 1 auto;
+      outline:none; white-space:pre; caret-color:transparent;
+      min-width:1ch; flex:1 1 auto;
     }
-    #command:empty::before {
-      content:"\200B"; /* zero-width space keeps line stable */
-      visibility:hidden;
-    }
+    /* Zero-width space prevents the empty contenteditable from collapsing */
+    #command:empty::before { content:"\200B"; visibility:hidden; }
+    /* Block cursor mimics terminal feel more faithfully than a text caret */
     #command.ready::after {
-      content:"";
-      display:inline-block;
-      width:8px;
-      height:1em;
-      background:#fff;
-      animation:blink 1s steps(1) infinite;
-      margin-left:0;
+      content:""; display:inline-block; width:8px; height:1em;
+      background:#fff; animation:blink 1s steps(1) infinite; margin-left:0;
     }
     @keyframes blink { 50% { background:transparent; } }
   </style>
@@ -107,12 +93,25 @@ def remove_task():
   <script>
     const cmdEl=document.getElementById("command"), outEl=document.getElementById("output");
 
+    // Auto-sticks to bottom unless the user scrolls up; threshold avoids jitter near the end
     let autoStick=true;
-    function appendAndStick(txt){ outEl.textContent+=txt; if(autoStick) outEl.scrollTop=outEl.scrollHeight; }
-    outEl.addEventListener("scroll",()=>{ autoStick=Math.abs(outEl.scrollHeight-outEl.scrollTop-outEl.clientHeight)<4; });
+    function appendAndStick(txt){
+      outEl.textContent+=txt;
+      if(autoStick) outEl.scrollTop=outEl.scrollHeight;
+    }
+    outEl.addEventListener("scroll",()=>{
+      autoStick=Math.abs(outEl.scrollHeight-outEl.scrollTop-outEl.clientHeight)<4;
+    });
 
-    function sanitize(raw){ return raw.replace(/[\u200B\u200C\u200D]/g,"").replace(/\u00A0/g," ").replace(/\r?\n/g,"").trim(); }
+    // Input hygiene: remove invisible characters and normalize whitespace so commands parse reliably
+    function sanitize(raw){
+      return raw.replace(/[\u200B\u200C\u200D]/g,"")
+                .replace(/\u00A0/g," ")
+                .replace(/\r?\n/g,"")
+                .trim();
+    }
 
+    // Pyodide boot: load runtime, then preload the Python functions to avoid first-command latency
     let pyodide;
     async function initPyodide(){
       pyodide=await loadPyodide();
@@ -121,6 +120,7 @@ def remove_task():
       cmdEl.focus();
     }
 
+    // Capture Python stdout to keep UI output consistent with terminal expectations
     async function pyRunAndCapture(code){
       let buf=""; pyodide.setStdout({batched:s=>buf+=s});
       await pyodide.runPythonAsync(code);
@@ -128,10 +128,13 @@ def remove_task():
       return buf;
     }
 
+    // Keep menu text reusable to restore state after clearing the list
     const MENU_TEXT=`\n\nOptions:\n\n1. Add Task\n\n2. Remove Task\n\n3. Quit\n\nEnter Your Choice, 1, 2, or 3`;
     let awaitingTask=false;
+    // Single-source keywords prevent accidental fallthrough and make intent explicit
     const specials=new Set(["1","2","3","help","credits","license","copyright"]);
 
+    // Command router: echo input, branch to menu actions, or request task text
     async function processCommand(raw){
       const original=sanitize(raw), low=original.toLowerCase();
       appendAndStick(`\n>>> ${original}\n\n`);
@@ -147,27 +150,45 @@ def remove_task():
         if(low==="license"){ appendAndStick("Python is distributed under the PSF License.\nSee https://docs.python.org/3/license.html for details."); return; }
         if(low==="copyright"){ appendAndStick("Copyright (c) 2001-2025 Python Software Foundation.\nAll Rights Reserved."); return; }
       }
-      if(awaitingTask){ appendAndStick(await pyRunAndCapture(`add_task(${JSON.stringify(original)})`)); awaitingTask=false; return; }
+      if(awaitingTask){
+        appendAndStick(await pyRunAndCapture(`add_task(${JSON.stringify(original)})`));
+        awaitingTask=false;
+        return;
+      }
       appendAndStick("Input not recognized, please type a valid input");
     }
 
+    // Enter submits commands; clearing content keeps the input line visually stable
     cmdEl.addEventListener("keydown",async e=>{
-      if(e.key==="Enter"){ e.preventDefault(); const raw=cmdEl.innerText; cmdEl.textContent=""; await processCommand(raw); }
+      if(e.key==="Enter"){
+        e.preventDefault();
+        const raw=cmdEl.innerText;
+        cmdEl.textContent="";
+        await processCommand(raw);
+      }
     });
 
-    function formatDate(){ const n=new Date(); return `${n.toDateString()} ${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`; }
-    function updateHeader(){ document.getElementById("header").textContent=`Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]\nType "help", "credits", "license", "copyright"\nfor more information.`;}
+    // REPL banner time-stamped to feel alive without distracting updates
+    function formatDate(){
+      const n=new Date();
+      return `${n.toDateString()} ${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`;
+    }
+    function updateHeader(){
+      document.getElementById("header").textContent=
+        `Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]\nType "help", "credits", "license", "copyright"\nfor more information.`;
+    }
     updateHeader(); setInterval(updateHeader,60000);
 
-    window.addEventListener("load",()=>{ initPyodide(); });
-
-    // Hybrid mouse trick: hidden by default, visible briefly on movement
+    // Cursor appears briefly on movement to signal focus, then hides to maintain terminal immersion
     let cursorTimer=null;
     window.addEventListener("mousemove",()=>{
-      document.body.style.cursor="default"; // show briefly
+      document.body.style.cursor="default";
       clearTimeout(cursorTimer);
       cursorTimer=setTimeout(()=>{ document.body.style.cursor="none"; },1200);
     });
+
+    // Initialize after load to avoid race conditions with DOM readiness
+    window.addEventListener("load",()=>{ initPyodide(); });
   </script>
 </body>
 </html>
