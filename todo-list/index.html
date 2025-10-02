@@ -177,7 +177,7 @@ def remove_task():
       document.getElementById("header").textContent=
         `Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]\nType "help", "credits", "license", "copyright"\nfor more information.`;
     }
-    updateHeader(); setInterval(updateHeader,60000);
+    updateHeader(); setInterval(updateHeader,1000);
 
     // Cursor appears briefly on movement to signal focus, then hides to maintain terminal immersion
     let cursorTimer=null;
