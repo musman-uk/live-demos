@@ -8,11 +8,11 @@
     html, body { height:100%; margin:0; }
     body {
       background:#000; color:#fff; font-family:"Courier New",monospace;
-      font-size:0.9em; overflow:hidden; cursor:none;
+      font-size:0.9em; overflow:hidden; cursor:none; /* hidden immediately */
     }
     #terminal {
       display:flex; flex-direction:column; height:100%;
-      padding:14px 20px 0 20px; box-sizing:border-box; background:#000;
+      padding:14px 20px 20px 20px; box-sizing:border-box; background:#000;
     }
     #header {
       margin-bottom:1em; white-space:pre-wrap; text-align:left;
@@ -26,15 +26,14 @@
     #output::after { content:""; display:block; height:64px; }
     #input-line {
       flex:0 0 auto; display:flex; align-items:center;
-      margin-top:8px; /* just spacing, no border */
-      padding-top:4px;
+      margin-top:8px; padding-top:4px;
     }
     #prompt { margin-right:6px; }
     #command {
       outline:none; white-space:pre; caret-color:transparent;
       display:inline-block; min-width:1ch; flex:1 1 auto;
     }
-    #command:empty::before { content:" "; color:#000; }
+    #command:empty::before { content:" "; color:#000; } /* invisible baseline */
     #command.ready::after {
       content:""; display:inline-block; width:8px; height:1em; background:#fff;
       animation:blink 1s steps(1) infinite; vertical-align:bottom;
