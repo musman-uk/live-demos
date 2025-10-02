@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>✅ To Do List</title>
   <script src="https://micropython.org/resources/micropython.js"></script>
   <style>
@@ -14,13 +14,15 @@
     #header { white-space:pre-wrap; margin-bottom:1em; text-align:left; }
     #output { flex:1 1 auto; white-space:pre-wrap; overflow-y:auto; scrollbar-width:none; width:98%; }
     #output::-webkit-scrollbar { display:none; }
-    #input-line { flex:0 0 auto; display:flex; align-items:center; border-top:1px solid #222; margin-top:8px; padding-top:8px; }
+    #input-line { flex:0 0 auto; display:flex; align-items:center; border-top:1px solid #222; margin-top:10px; padding-top:10px; }
     #prompt { margin-right:6px; }
     #command { outline:none; white-space:pre; caret-color:transparent; display:inline-block; min-width:1ch; }
-    #command:empty::before { content:" "; color:#000; } /* invisible placeholder */
-    #command::after { content:""; display:inline-block; width:8px; height:1em; background:#fff;
-      animation:blink 1s steps(1) infinite; vertical-align:bottom; }
-    @keyframes blink { 50%{background:transparent;} }
+    #command:empty::before { content:" "; color:#000; } /* invisible baseline placeholder */
+    #command::after {
+      content:""; display:inline-block; width:8px; height:1em; background:#fff;
+      animation:blink 1s steps(1) infinite; vertical-align:bottom;
+    }
+    @keyframes blink { 50% { background:transparent; } }
   </style>
 </head>
 <body>
@@ -71,28 +73,56 @@ def remove_task():
   </script>
 
   <script>
-    const cmdEl=document.getElementById("command"), outEl=document.getElementById("output");
+    // Elements
+    const cmdEl = document.getElementById("command");
+    const outEl = document.getElementById("output");
 
-    function sanitize(raw){ return raw.replace(/[\u200B\u200C\u200D]/g,"").replace(/\u00A0/g," ").trim(); }
-    function normalize(){ if(cmdEl.innerText==="") cmdEl.textContent=""; }
-    let autoStick=true;
-    function atBottom(){ return Math.abs(outEl.scrollHeight - outEl.scrollTop - outEl.clientHeight) < 4; }
-    function append(txt){ outEl.textContent+=txt; if(autoStick) outEl.scrollTop=outEl.scrollHeight; }
-    outEl.addEventListener("scroll",()=>{ autoStick=atBottom(); });
+    // Output helpers with sticky-bottom behavior
+    let autoStick = true;
+    function atBottom() {
+      return Math.abs(outEl.scrollHeight - outEl.scrollTop - outEl.clientHeight) < 4;
+    }
+    function append(txt) {
+      outEl.textContent += txt;
+      if (autoStick) outEl.scrollTop = outEl.scrollHeight;
+    }
+    outEl.addEventListener("scroll", () => { autoStick = atBottom(); });
+
+    // Sanitize input from contenteditable quirks
+    function sanitize(raw) {
+      return raw
+        .replace(/[\u200B\u200C\u200D]/g, "") // zero-width
+        .replace(/\u00A0/g, " ")             // non-breaking
+        .replace(/\r?\n/g, "")               // stray newlines
+        .trim();
+    }
 
     // MicroPython stdout capture
-    window.mp_js_stdout_buffer="";
-    window.mp_js_stdout=s=>{ window.mp_js_stdout_buffer+=s; };
-    function initMicroPython(){ mp_js_init(128*1024); mp_js_do_str(document.getElementById("py-code").textContent); }
-    function flushPy(){
-      window.mp_js_stdout_buffer="";
+    window.mp_js_stdout_buffer = "";
+    window.mp_js_stdout = s => { window.mp_js_stdout_buffer += s; };
+
+    // VM init + readiness
+    let mpReady = false;
+    function initMicroPython() {
+      mp_js_init(128 * 1024);
+      mp_js_do_str(document.getElementById("py-code").textContent);
+      mpReady = true;
+      flushQueue();
+    }
+
+    function flushPy() {
+      window.mp_js_stdout_buffer = "";
       mp_js_do_str("print(flush_output())");
-      const s=window.mp_js_stdout_buffer;
-      window.mp_js_stdout_buffer="";
+      const s = window.mp_js_stdout_buffer;
+      window.mp_js_stdout_buffer = "";
       return s;
     }
-    function runPy(code){ mp_js_do_str(code); return flushPy(); }
+    function runPy(code) {
+      mp_js_do_str(code);
+      return flushPy();
+    }
 
+    // Menu text to reprint after Quit (no welcome)
     const MENU_TEXT = `
 
 Options:  
@@ -105,63 +135,127 @@ Options:
 
 Enter Your Choice, 1, 2, or 3       `;
 
-    let awaitingTask=false;
-    function isMenuCommand(c){
+    // Command state and routing
+    let awaitingTask = false;
+    function isMenuCommand(c) {
       return ["1","2","3","help","credits","license","copyright"].includes(c);
     }
 
-    function runCommand(raw){
-      const cmd=sanitize(raw);
-      const low=cmd.toLowerCase();
-      append(`\n>>> ${cmd}\n\n`);
-      if(!low) return;
+    // Queue commands until VM is ready (prevents “just numbers” symptom)
+    const queue = [];
+    function enqueue(raw) { queue.push(raw); }
+    function flushQueue() {
+      while (queue.length) {
+        const raw = queue.shift();
+        processCommand(raw, /*echo*/ false);
+      }
+    }
 
-      if(isMenuCommand(low)){
-        awaitingTask=false;
-        if(low==="1"){ append("Enter task"); awaitingTask=true; return; }
-        if(low==="2"){ append(runPy("remove_task()")); return; }
-        if(low==="3"){ mp_js_do_str("todo_list.clear()"); append("Your To Do List is empty"+MENU_TEXT); return; }
-        if(low==="help"){ append("Type the number of an option to execute it.\n\n1 = Add a task\n2 = Remove the last task\n3 = Quit the program"); return; }
-        if(low==="credits"){ append("This was originally created on Mimo."); return; }
-        if(low==="license"){ append("Python is distributed under the PSF License.\nSee https://docs.python.org/3/license.html for details."); return; }
-        if(low==="copyright"){ append("Copyright (c) 2001-2025 Python Software Foundation.\nAll Rights Reserved."); return; }
+    // Core processor: can run with or without echo (for queued items)
+    function processCommand(raw, echo = true) {
+      const original = sanitize(raw);
+      const low = original.toLowerCase();
+
+      if (echo) append(`\n>>> ${original}\n\n`);
+      if (!low) return;
+
+      // Menu commands have priority and can interrupt add flow
+      if (isMenuCommand(low)) {
+        awaitingTask = false;
+
+        if (low === "1") {
+          append("Enter task");
+          awaitingTask = true;
+          return;
+        }
+        if (low === "2") {
+          append(runPy("remove_task()"));
+          return;
+        }
+        if (low === "3") {
+          mp_js_do_str("todo_list.clear()");
+          append("Your To Do List is empty" + MENU_TEXT);
+          return;
+        }
+        if (low === "help") {
+          append("Type the number of an option to execute it.\n\n1 = Add a task\n2 = Remove the last task\n3 = Quit the program");
+          return;
+        }
+        if (low === "credits") {
+          append("This was originally created on Mimo.");
+          return;
+        }
+        if (low === "license") {
+          append("Python is distributed under the PSF License.\nSee https://docs.python.org/3/license.html for details.");
+          return;
+        }
+        if (low === "copyright") {
+          append("Copyright (c) 2001-2025 Python Software Foundation.\nAll Rights Reserved.");
+          return;
+        }
       }
 
-      if(awaitingTask){
-        append(runPy(`add_task(${JSON.stringify(cmd)})`));
-        awaitingTask=false;
+      // If we were prompted to add a task, and the input isn't a command, treat it as the task name
+      if (awaitingTask) {
+        append(runPy(`add_task(${JSON.stringify(original)})`));
+        awaitingTask = false;
         return;
       }
 
+      // Anything else is invalid
       append("Input not recognized, please type a valid input");
     }
 
-    cmdEl.addEventListener("keydown",e=>{
-      if(e.key==="Enter"){ e.preventDefault(); const raw=cmdEl.innerText; cmdEl.textContent=""; runCommand(raw); }
-    });
-    cmdEl.addEventListener("input",normalize);
-
-    // Header
-    function formatDate(){
-      const n=new Date();
-      return `${n.toDateString()} ${n.getHours().toString().padStart(2,"0")}:${n.getMinutes().toString().padStart(2,"0")}`;
+    // Public entrypoint: handles VM readiness and echo
+    function runCommand(raw) {
+      if (!mpReady) {
+        // Echo immediately so the terminal feels alive, then queue for execution
+        append(`\n>>> ${sanitize(raw)}\n\n`);
+        enqueue(raw);
+        return;
+      }
+      processCommand(raw, /*echo*/ true);
     }
-    function updateHeader(){
+
+    // Input handling
+    function normalize() { if (cmdEl.innerText === "") cmdEl.textContent = ""; }
+    cmdEl.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const raw = cmdEl.innerText;
+        cmdEl.textContent = ""; // keep prompt seamless
+        runCommand(raw);
+      }
+    });
+    cmdEl.addEventListener("input", normalize);
+
+    // Header (permanent info like Pyodide)
+    function formatDate() {
+      const n = new Date();
+      return `${n.toDateString()} ${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`;
+    }
+    function updateHeader() {
       document.getElementById("header").textContent =
 `Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]
 Type "help", "credits", "license", "copyright"
 for more information.`;
     }
-    updateHeader(); setInterval(updateHeader,60000);
+    updateHeader();
+    setInterval(updateHeader, 60000);
 
-    window.addEventListener("load",()=>{ normalize(); cmdEl.focus(); initMicroPython(); });
+    // Init + focus
+    window.addEventListener("load", () => {
+      normalize();
+      cmdEl.focus();
+      initMicroPython();
+    });
 
-    // Hidden mouse trick
-    let cursorTimer=null;
-    window.addEventListener("mousemove",()=>{
-      document.body.style.cursor="default";
+    // Hidden mouse trick: show briefly on movement
+    let cursorTimer = null;
+    window.addEventListener("mousemove", () => {
+      document.body.style.cursor = "default";
       clearTimeout(cursorTimer);
-      cursorTimer=setTimeout(()=>{ document.body.style.cursor="none"; },1200);
+      cursorTimer = setTimeout(() => { document.body.style.cursor = "none"; }, 1200);
     });
   </script>
 </body>
