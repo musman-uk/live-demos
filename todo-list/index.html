@@ -43,7 +43,7 @@
      white-space: pre;       /* preserve spaces */
      caret-color: transparent; /* hide native caret */
      display: inline-block;
-     min-width: 1px; /* keeps it clickable when empty */
+     min-width: 1ch; /* reserve space even when empty */
   }
     #command::after {
     content: "";
@@ -52,7 +52,7 @@
     height: 1em;
     background: #fff;
     animation: blink 1s steps(1) infinite;
-    vertical-align: bottom;
+    vertical-align: text-bottom;
   }
 
 @keyframes blink {
