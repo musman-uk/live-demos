@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>🖼️ Interactive Gallery</title>
+  <style>
+    /* --- Global Styles --- */
+    body {
+      font-family: Arial, sans-serif;
+      padding: 0;
+      margin: 0;
+      background-color: antiquewhite;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 40px;
+      margin: 0;
+      color: darkslategray;
+    }
+
+    /* --- Gallery Layout --- */
+    .gallery {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .item {
+      text-align: center;
+      max-width: 200px;
+    }
+
+    .thumbnail {
+      transition: transform 0.3s;
+      width: 150px;
+      height: 150px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    .thumbnail:hover {
+      transform: scale(1.1);
+    }
+
+    /* --- Modal Styles --- */
+    #modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.9);
+      z-index: 10;
+    }
+
+    #modal-close-button {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+    }
+
+    #modal-content {
+      position: absolute;
+      top: 50%; left: 50%;
+      max-width: 90%;
+      max-height: 90%;
+      transform: translate(-50%, -50%);
+      border-radius: 8px;
+    }
+
+    /* --- Footer Credit --- */
+    footer {
+      position: fixed;
+      bottom: 8px;
+      right: 12px;
+      font-size: 0.8em;
+      color: #ffffff;
+      text-shadow: 0 0 2px rgba(0,0,0,0.8);
+      font-family: Arial, sans-serif;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <h1>🖼️ Interactive Gallery... of cats!</h1>
+
+  <!-- Gallery Items -->
+  <div class="gallery">
+    <div class="item">
+      <img src="https://mimo.app/i/whispurr.png" class="thumbnail" alt="Whispurr" onclick="showModal(this)" />
+      <h2>Whispurr</h2>
+      <p>quietttt mister!</p>
+    </div>
+    <div class="item">
+      <img src="https://mimo.app/i/babaganoosh.png" class="thumbnail" alt="Babaganoosh" onclick="showModal(this)" />
+      <h2>Babaganoosh</h2>
+      <p>wait..what did you just say??</p>
+    </div>
+    <div class="item">
+      <img src="https://mimo.app/i/nacho.png" class="thumbnail" alt="Nacho" onclick="showModal(this)" />
+      <h2>Nacho</h2>
+      <p>nacho girl anymore!</p>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal">
+    <span id="modal-close-button" onclick="hideModal()">×</span>
+    <img id="modal-content" alt="Expanded view" />
+  </div>
+
+  <!-- Footer Credit -->
+  <footer>
+    Originally created and hosted via Mimo
+  </footer>
+
+  <script>
+    // --- Modal Logic ---
+    const modal = document.getElementById("modal");
+    const modalContent = document.getElementById("modal-content");
+
+    function showModal(thumbnail) {
+      modalContent.src = thumbnail.src;
+      modal.style.display = "block";
+    }
+
+    function hideModal() {
+      modal.style.display = "none";
+    }
+  </script>
+</body>
+</html>
