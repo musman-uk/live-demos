@@ -94,17 +94,31 @@ Type "help", "copyright", "credits" or "license"`;
     /* MicroPython stdout capture */
     window.mp_js_stdout_buffer=""; window.mp_js_stdout=s=>{ window.mp_js_stdout_buffer+=s; };
 
-    /* Init MicroPython */
-    let mpReady=false; function initMicroPython(){ mp_js_init(128*1024); mp_js_do_str(document.getElementById("py-code").textContent); mpReady=true; }
+    /* Init MicroPython immediately */
+    function initMicroPython(){
+      mp_js_init(128*1024);
+      mp_js_do_str(document.getElementById("py-code").textContent);
+    }
 
     /* Flush helper */
-    function flushPy(){ window.mp_js_stdout_buffer=""; mp_js_do_str("print(flush_output())"); const s=window.mp_js_stdout_buffer; window.mp_js_stdout_buffer=""; return s; }
+    function flushPy(){
+      window.mp_js_stdout_buffer="";
+      mp_js_do_str("print(flush_output())");
+      const s=window.mp_js_stdout_buffer;
+      window.mp_js_stdout_buffer="";
+      return s;
+    }
 
     /* Command handling */
     let awaitingTask=false;
     function runCommand(raw){
-      const cmd=sanitize(raw).toLowerCase(); if(!cmd||!mpReady) return;
+      const cmd=sanitize(raw).toLowerCase();
+
+      // Always echo prompt, even if empty
       append(`\n>>> ${cmd}\n\n`);
+
+      if(!cmd){ return; } // blank line, like Pyodide REPL
+
       if(awaitingTask){
         mp_js_do_str(`add_task(${JSON.stringify(cmd)})`);
         awaitingTask=false; append(flushPy()); return;
