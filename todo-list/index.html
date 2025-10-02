@@ -10,26 +10,15 @@
       background:#000; color:#fff; font-family:"Courier New",monospace;
       font-size:0.9em; overflow:hidden; cursor:none;
     }
-    #terminal {
-      display:flex; flex-direction:column; height:100%;
-      padding:10px; box-sizing:border-box;
-    }
+    #terminal { display:flex; flex-direction:column; height:100%; padding:10px; box-sizing:border-box; }
     #header { white-space:pre-wrap; margin-bottom:1em; }
-    #output {
-      flex:1 1 auto; white-space:pre-wrap; overflow-y:auto;
-      scrollbar-width:none;
-    }
+    #output { flex:1 1 auto; white-space:pre-wrap; overflow-y:auto; scrollbar-width:none; }
     #output::-webkit-scrollbar { display:none; }
-    #input-line {
-      flex:0 0 auto; display:flex; align-items:center;
-      border-top:1px solid #222; padding-top:6px;
-    }
+    #input-line { flex:0 0 auto; display:flex; align-items:center; border-top:1px solid #222; padding-top:6px; }
     #prompt { margin-right:6px; }
     #command { outline:none; white-space:pre; caret-color:transparent; display:inline-block; min-width:1ch; }
-    #command::after {
-      content:""; display:inline-block; width:8px; height:1em; background:#fff;
-      animation:blink 1s steps(1) infinite; vertical-align:bottom;
-    }
+    #command::after { content:""; display:inline-block; width:8px; height:1em; background:#fff;
+      animation:blink 1s steps(1) infinite; vertical-align:bottom; }
     @keyframes blink { 50%{background:transparent;} }
   </style>
 </head>
@@ -70,16 +59,14 @@ todo_list = []
 
 def add_task(task):
     todo_list.append(task)
-    py_print(f"Task '{task}' added to the To Do List")
-    py_print("")
+    py_print(f"Task '{task}' added")
 
 def remove_task():
     if todo_list:
         removed = todo_list.pop()
-        py_print(f"Task '{removed}' removed from the To Do List")
+        py_print(f"Task '{removed}' removed")
     else:
         py_print("Your To Do List is empty")
-    py_print("")
   </script>
 
   <script>
@@ -117,7 +104,6 @@ Enter Your Choice, 1, 2, or 3       `;
       append(`\n>>> ${cmd}\n\n`);
       if(!cmd) return;
 
-      // If awaiting task and user typed non-command, treat input as task description
       if(awaitingTask && !["1","2","3","help","credits","license","copyright"].includes(cmd)){
         mp_js_do_str(`add_task(${JSON.stringify(cmd)})`);
         append(flushPy());
@@ -125,9 +111,8 @@ Enter Your Choice, 1, 2, or 3       `;
         return;
       }
 
-      // Menu commands
       if(cmd==="1"){
-        append("Adding task\n\nEnter the task:");
+        append("Enter task you would like to add");
         awaitingTask=true;
       }
       else if(cmd==="2"){
@@ -151,7 +136,7 @@ Enter Your Choice, 1, 2, or 3       `;
         append("Copyright (c) 2001-2025 Python Software Foundation.\nAll Rights Reserved.");
       }
       else {
-        append("Invalid choice");
+        append("Input not recognized, please type a valid input");
       }
     }
 
@@ -160,9 +145,22 @@ Enter Your Choice, 1, 2, or 3       `;
     });
     cmdEl.addEventListener("input",normalize);
 
+    // Banner with permanent help/credits/license/copyright
+    function formatDate(){
+      const n=new Date();
+      return `${n.toDateString()} ${n.getHours().toString().padStart(2,"0")}:${n.getMinutes().toString().padStart(2,"0")}`;
+    }
+    function updateHeader(){
+      document.getElementById("header").textContent =
+`Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]
+Type "help", "credits", "license", "copyright"
+for more information.`;
+    }
+    updateHeader(); setInterval(updateHeader,60000);
+
     window.addEventListener("load",()=>{ normalize(); cmdEl.focus(); initMicroPython(); });
 
-    // Optional: show mouse briefly when moved (keeps terminal feel)
+    // Hidden mouse trick: show briefly on movement
     let cursorTimer=null;
     window.addEventListener("mousemove",()=>{
       document.body.style.cursor="default";
