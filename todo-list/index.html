@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>✅ To Do List</title>
-  <!-- MicroPython WASM runtime -->
   <script src="https://micropython.org/resources/micropython.js"></script>
   <style>
-    /* --- Terminal look --- */
     body { background:#111; color:#fff; font-family:"Courier New",monospace; margin:0; height:100vh; font-size:0.9em; }
     #terminal { position:relative; background:#000; height:100vh; padding:10px; border-top:2px solid #444; box-sizing:border-box; }
     #header { margin-bottom:1em; white-space:pre-wrap; }
@@ -14,7 +12,6 @@
     #output::-webkit-scrollbar { display:none; }
     #input-line { position:absolute; bottom:0; left:0; right:0; padding:10px; background:#000; border-top:1px solid #333; display:flex; align-items:center; height:48px; }
     #prompt { margin-right:6px; }
-    /* --- Fake block cursor --- */
     #command { outline:none; white-space:pre; caret-color:transparent; display:inline-block; min-width:1ch; }
     #command::after { content:""; display:inline-block; width:8px; height:1em; background:#fff; animation:blink 1s steps(1) infinite; vertical-align:bottom; }
     @keyframes blink { 50%{background:transparent;} }
@@ -27,8 +24,11 @@
 Welcome to To Do List  
 
 Options:  
+
 1. Add Task  
+
 2. Remove Task  
+
 3. Quit  
 
 Enter Your Choice, 1, 2, or 3       
@@ -39,7 +39,7 @@ Enter Your Choice, 1, 2, or 3
     </div>
   </div>
 
-  <!-- Original Mimo Python logic (unchanged) -->
+  <!-- Original Mimo Python logic -->
   <script id="py-code" type="text/plain">
 _output = []
 def py_print(*args): _output.append(" ".join(str(a) for a in args))
@@ -60,37 +60,39 @@ def remove_task():
   </script>
 
   <script>
-    /* --- Banner dressing --- */
+    /* Banner */
     function formatDate(){ const n=new Date(); return `${n.toDateString()} ${n.getHours().toString().padStart(2,"0")}:${n.getMinutes().toString().padStart(2,"0")}`; }
     function updateHeader(){
       document.getElementById("header").textContent=
 `Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]
-Type "help", "copyright", "credits" or "license"`;
+Type "help", "copyright", "credits"`;
     }
     updateHeader(); setInterval(updateHeader,60000);
 
-    /* --- Helpers --- */
+    /* Helpers */
     const cmdEl=document.getElementById("command");
     function sanitizeInput(raw){ return raw.replace(/[\u200B\u200C\u200D]/g,"").replace(/\u00A0/g," ").trim().toLowerCase(); }
     function normalizeCommand(){ if(cmdEl.innerText==="") cmdEl.textContent=" "; }
     function appendAndStick(txt){ const out=document.getElementById("output"); out.textContent+=txt; out.scrollTop=out.scrollHeight; }
 
-    /* --- MicroPython init --- */
+    /* MicroPython init */
     let mpReady=false, awaitingTask=false;
     window.mp_js_stdout_buffer=""; window.mp_js_stdout=s=>{ window.mp_js_stdout_buffer+=s; };
     function initMicroPython(){ mp_js_init(128*1024); mp_js_do_str(document.getElementById("py-code").textContent); mpReady=true; }
 
-    /* --- Command handler --- */
+    /* Command handler */
     function runCommand(raw){
       const cmd=sanitizeInput(raw); if(!cmd||!mpReady) return;
       let output="";
       if(awaitingTask){
-        mp_js_do_str(`add_task(${JSON.stringify(cmd)})`); awaitingTask=false;
-        mp_js_do_str("print(flush_output())"); output=window.mp_js_stdout_buffer; window.mp_js_stdout_buffer="";
+        mp_js_do_str(`add_task(${JSON.stringify(cmd)})`);
+        awaitingTask=false;
+        window.mp_js_stdout_buffer=""; mp_js_do_str("print(flush_output())");
+        output=window.mp_js_stdout_buffer; window.mp_js_stdout_buffer="";
         appendAndStick(`\n>>> ${cmd}\n\n${output}`); return;
       }
       if(cmd==="1"){ output="Adding task\n\nEnter the task:"; awaitingTask=true; }
-      else if(cmd==="2"){ mp_js_do_str("remove_task()"); mp_js_do_str("print(flush_output())"); output=window.mp_js_stdout_buffer; window.mp_js_stdout_buffer=""; }
+      else if(cmd==="2"){ window.mp_js_stdout_buffer=""; mp_js_do_str("remove_task()"); mp_js_do_str("print(flush_output())"); output=window.mp_js_stdout_buffer; window.mp_js_stdout_buffer=""; }
       else if(cmd==="3"){ mp_js_do_str("todo_list.clear()"); output="Quitting\n\nYour To Do List is empty"; }
       else if(cmd==="help"){ output="Type the number of an option to execute it.\n\n1 = Add a task\n2 = Remove the last task\n3 = Quit the program"; }
       else if(cmd==="credits"){ output="This was originally created on Mimo."; }
@@ -100,13 +102,13 @@ Type "help", "copyright", "credits" or "license"`;
       appendAndStick(`\n>>> ${cmd}\n\n${output}`);
     }
 
-    /* --- Input handling --- */
+    /* Input handling */
     cmdEl.addEventListener("keydown",e=>{
       if(e.key==="Enter"){ e.preventDefault(); const raw=cmdEl.innerText; cmdEl.textContent=" "; runCommand(raw); }
     });
     cmdEl.addEventListener("input",normalizeCommand);
 
-    /* --- Auto-focus --- */
+    /* Auto-focus */
     window.addEventListener("load",()=>{ normalizeCommand(); cmdEl.focus(); initMicroPython(); });
     document.getElementById("terminal").addEventListener("click",()=>cmdEl.focus());
   </script>
