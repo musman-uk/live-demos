@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>🔐 Caesar Cipher</title>
   <style>
-    /* --- Global Styles --- */
+    /* Global styles: serif font for a classical feel, dark theme for contrast and readability */
     body {
       font-family: "Cambria", serif;
       background-color: #0C2828;
@@ -13,6 +13,7 @@
       padding: 20px;
     }
 
+    /* Headings: light text with underline to separate sections visually */
     h2, h3 {
       color: #EFF2F7;
       border-bottom: 2px solid #2C3E50;
@@ -30,6 +31,7 @@
       font-size: 1.1em;
     }
 
+    /* Inputs and textarea: styled to match dark theme, with clear focus state for accessibility */
     input,
     textarea {
       box-sizing: border-box;
@@ -45,11 +47,11 @@
 
     input:focus,
     textarea:focus {
-      border: 1px solid #3498DB;
+      border: 1px solid #3498DB; /* blue accent signals active input */
       outline: none;
     }
 
-    /* --- Footer Credit --- */
+    /* Footer: fixed credit, styled subtly so it remains visible without distracting from the tool */
     footer {
       position: fixed;
       bottom: 8px;
@@ -65,11 +67,11 @@
 <body>
   <h2>Caesar Cipher</h2>
 
-  <!-- Shift input -->
+  <!-- Shift input: user chooses rotation amount; constrained to 1–25 to avoid trivial/no-op cases -->
   <label for="shift">Shift (1-25):</label>
   <input type="number" id="shift" value="1" min="1" max="25" />
 
-  <!-- Plaintext input -->
+  <!-- Plaintext input: freeform text area for encoding -->
   <label for="plaintext">Enter your text:</label>
   <textarea
     id="plaintext"
@@ -78,25 +80,25 @@
     placeholder="Enter your text here..."
   ></textarea>
 
-  <!-- Output -->
+  <!-- Output: dynamically updated with translated text -->
   <h3>Translated text</h3>
   <p id="output"></p>
 
-  <!-- Footer Credit -->
+  <!-- Attribution footer -->
   <footer>
     Originally created and hosted via Mimo
   </footer>
 
   <script>
-    // --- Caesar Cipher Logic ---
+    // Core Caesar cipher: shifts alphabetic characters by 'shift' positions, preserving case
     function caesarCipher(str, shift) {
       return str.replace(/[a-zA-Z]/g, function(c) {
-        const base = c < 'a' ? 65 : 97;
+        const base = c < 'a' ? 65 : 97; // ASCII base differs for uppercase vs lowercase
         return String.fromCharCode((c.charCodeAt(0) - base + shift) % 26 + base);
       });
     }
 
-    // Translate input text with given shift
+    // Translate: reads input values, applies cipher, and updates the output element
     function translate() {
       const plaintextValue = document.getElementById('plaintext').value;
       const shiftValue = parseInt(document.getElementById('shift').value);
@@ -104,7 +106,7 @@
       document.getElementById('output').textContent = outputValue;
     }
 
-    // Event listeners for live translation
+    // Live translation: updates output immediately as user types or changes shift value
     document.getElementById('plaintext').addEventListener('input', translate);
     document.getElementById('shift').addEventListener('input', translate);
   </script>
