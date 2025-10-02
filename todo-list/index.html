@@ -5,7 +5,10 @@
   <title>✅ To Do List</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
-    html, body { height:100%; margin:0; cursor:none; }
+    html, body {
+      height:100%; margin:0;
+      cursor:none; /* invisible immediately */
+    }
     body {
       background:#000; color:#fff; font-family:"Courier New",monospace;
       font-size:0.9em; overflow:hidden;
@@ -27,8 +30,8 @@
     /* Input line perfection */
     #input-line {
       flex:0 0 auto;
-      display:inline-flex;       /* single box */
-      align-items:center;        /* vertical lock */
+      display:inline-flex;
+      align-items:center;
       margin-top:8px;
       padding-top:4px;
       line-height:1em;
@@ -40,9 +43,7 @@
       display:inline-flex;
       align-items:center;
     }
-    #prompt {
-      margin-right:6px;
-    }
+    #prompt { margin-right:6px; }
     #command {
       outline:none;
       white-space:pre;
@@ -51,7 +52,7 @@
       flex:1 1 auto;
     }
     #command:empty::before {
-      content:"\200B";           /* zero-width space keeps line stable */
+      content:"\200B"; /* zero-width space keeps line stable */
       visibility:hidden;
     }
     #command.ready::after {
@@ -66,7 +67,7 @@
     @keyframes blink { 50% { background:transparent; } }
   </style>
 </head>
-<body style="cursor:none;">
+<body>
   <div id="terminal">
     <div id="header"></div>
     <div id="output">
@@ -160,10 +161,10 @@ def remove_task():
 
     window.addEventListener("load",()=>{ initPyodide(); });
 
-    // Hidden mouse trick
+    // Hybrid mouse trick: hidden by default, visible briefly on movement
     let cursorTimer=null;
     window.addEventListener("mousemove",()=>{
-      document.body.style.cursor="default";
+      document.body.style.cursor="default"; // show briefly
       clearTimeout(cursorTimer);
       cursorTimer=setTimeout(()=>{ document.body.style.cursor="none"; },1200);
     });
