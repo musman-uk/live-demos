@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>✅ To Do List</title>
+  <!-- MicroPython WASM runtime -->
   <script src="https://micropython.org/resources/micropython.js"></script>
   <style>
+    /* Terminal look */
     body { background:#111; color:#fff; font-family:"Courier New",monospace; margin:0; height:100vh; font-size:0.9em; }
     #terminal { position:relative; background:#000; height:100vh; padding:10px; border-top:2px solid #444; box-sizing:border-box; }
     #header { margin-bottom:1em; white-space:pre-wrap; }
@@ -12,6 +14,7 @@
     #output::-webkit-scrollbar { display:none; }
     #input-line { position:absolute; bottom:0; left:0; right:0; padding:10px; background:#000; border-top:1px solid #333; display:flex; align-items:center; height:48px; }
     #prompt { margin-right:6px; }
+    /* Single block cursor */
     #command { outline:none; white-space:pre; caret-color:transparent; display:inline-block; min-width:1ch; }
     #command::after { content:""; display:inline-block; width:8px; height:1em; background:#fff; animation:blink 1s steps(1) infinite; vertical-align:bottom; }
     @keyframes blink { 50%{background:transparent;} }
@@ -39,76 +42,140 @@ Enter Your Choice, 1, 2, or 3
     </div>
   </div>
 
-  <!-- Original Mimo Python logic -->
+  <!-- Original Mimo Python logic (unchanged behavior) -->
   <script id="py-code" type="text/plain">
 _output = []
-def py_print(*args): _output.append(" ".join(str(a) for a in args))
+def py_print(*args):
+    _output.append(" ".join(str(a) for a in args))
+
 def flush_output():
-    s = "\n".join(_output); _output.clear(); return s
+    s = "\n".join(_output)
+    _output.clear()
+    return s
 
 todo_list = []
+
 def show_list():
     if todo_list:
-        for i, task in enumerate(todo_list, 1): py_print(f"{i}. {task}")
+        for i, task in enumerate(todo_list, 1):
+            py_print(f"{i}. {task}")
     py_print("")
+
 def add_task(task):
-    todo_list.append(task); py_print(f"Task '{task}' added to the To Do List"); py_print("")
+    todo_list.append(task)
+    py_print(f"Task '{task}' added to the To Do List")
+    py_print("")
+
 def remove_task():
-    if todo_list: py_print(f"Task '{todo_list.pop()}' removed from the To Do List")
-    else: py_print("Your To Do List is empty")
+    if todo_list:
+        removed = todo_list.pop()
+        py_print(f"Task '{removed}' removed from the To Do List")
+    else:
+        py_print("Your To Do List is empty")
     py_print("")
   </script>
 
   <script>
-    /* Banner */
-    function formatDate(){ const n=new Date(); return `${n.toDateString()} ${n.getHours().toString().padStart(2,"0")}:${n.getMinutes().toString().padStart(2,"0")}`; }
-    function updateHeader(){
-      document.getElementById("header").textContent=
-`Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]
-Type "help", "credits", "license"`;
+    /* Banner dressing to feel like CPython */
+    function formatDate(){
+      const n=new Date();
+      return `${n.toDateString()} ${n.getHours().toString().padStart(2,"0")}:${n.getMinutes().toString().padStart(2,"0")}`;
     }
-    updateHeader();
+    function updateHeader(){
+      document.getElementById("header").textContent =
+`Python 3.15.0 (main, ${formatDate()}) [Clang 14.0.0]
+Type "help", "copyright", "credits" or "license" for more information.`;
+    }
+    updateHeader(); setInterval(updateHeader, 60000);
 
-    /* Helpers */
-    const cmdEl=document.getElementById("command"), outEl=document.getElementById("output");
-    function sanitize(raw){ return raw.replace(/[\u200B\u200C\u200D]/g,"").replace(/\u00A0/g," ").trim(); }
-    function append(txt){ outEl.textContent+=txt; outEl.scrollTop=outEl.scrollHeight; }
+    /* DOM helpers */
+    const cmdEl = document.getElementById("command");
+    const outEl = document.getElementById("output");
+    function sanitize(raw){
+      return raw.replace(/[\u200B\u200C\u200D]/g,"").replace(/\u00A0/g," ").trim();
+    }
     function normalize(){ if(cmdEl.innerText==="") cmdEl.textContent=" "; }
+    function append(txt){ outEl.textContent += txt; outEl.scrollTop = outEl.scrollHeight; }
+
+    /* MicroPython stdout capture */
+    window.mp_js_stdout_buffer = "";
+    window.mp_js_stdout = s => { window.mp_js_stdout_buffer += s; };
 
     /* MicroPython init */
-    let awaitingTask=false;
-    window.mp_js_stdout_buffer=""; window.mp_js_stdout=s=>{ window.mp_js_stdout_buffer+=s; };
-    function initMicroPython(){ mp_js_init(128*1024); mp_js_do_str(document.getElementById("py-code").textContent); }
-
-    /* Command handler */
-    function runCommand(raw){
-      const cmd=sanitize(raw).toLowerCase(); if(!cmd) return;
-      append(`\n>>> ${cmd}\n\n`);
-      if(awaitingTask){
-        window.mp_js_stdout_buffer="";
-        mp_js_do_str(`add_task(${JSON.stringify(cmd)})`);
-        mp_js_do_str("print(flush_output())");
-        append(window.mp_js_stdout_buffer); window.mp_js_stdout_buffer="";
-        awaitingTask=false; return;
-      }
-      if(cmd==="1"){ append("Adding task\n\nEnter the task:"); awaitingTask=true; }
-      else if(cmd==="2"){ window.mp_js_stdout_buffer=""; mp_js_do_str("remove_task()"); mp_js_do_str("print(flush_output())"); append(window.mp_js_stdout_buffer); window.mp_js_stdout_buffer=""; }
-      else if(cmd==="3"){ mp_js_do_str("todo_list.clear()"); append("Quitting\n\nYour To Do List is empty"); }
-      else if(cmd==="help"){ append("Type 1 to add, 2 to remove, 3 to quit."); }
-      else if(cmd==="credits"){ append("This was originally created on Mimo."); }
-      else if(cmd==="license"){ append("Python is distributed under the PSF License."); }
-      else{ append("Invalid choice"); }
+    let mpReady = false;
+    function initMicroPython(){
+      mp_js_init(128*1024);
+      mp_js_do_str(document.getElementById("py-code").textContent);
+      mpReady = true;
     }
 
-    /* Input handling */
-    cmdEl.addEventListener("keydown",e=>{
-      if(e.key==="Enter"){ e.preventDefault(); const raw=cmdEl.innerText; cmdEl.textContent=" "; runCommand(raw); }
-    });
-    cmdEl.addEventListener("input",normalize);
+    /* Command handling: EXACT behavior from Pyodide version */
+    let awaitingTask = false;
 
-    /* Auto-focus */
-    window.addEventListener("load",()=>{ normalize(); cmdEl.focus(); initMicroPython(); });
-    document.getElementById("terminal").addEventListener("click",()=>cmdEl.focus());
+    function flushPy(){
+      // Reset buffer, flush Python's _output via print, then read buffer
+      window.mp_js_stdout_buffer = "";
+      mp_js_do_str("print(flush_output())");
+      const s = window.mp_js_stdout_buffer;
+      window.mp_js_stdout_buffer = "";
+      return s;
+    }
+
+    function runCommand(raw){
+      const cmd = sanitize(raw).toLowerCase();
+      if(!cmd || !mpReady) return;
+
+      // Echo typed command
+      append(`\n>>> ${cmd}\n\n`);
+
+      // If waiting for a task name, send to Python add_task and show Python output
+      if (awaitingTask) {
+        mp_js_do_str(`add_task(${JSON.stringify(cmd)})`);
+        awaitingTask = false;
+        append(flushPy());
+        return;
+      }
+
+      // Menu options
+      if (cmd === "1") {
+        append("Adding task\n\nEnter the task:");
+        awaitingTask = true;
+      } else if (cmd === "2") {
+        mp_js_do_str("remove_task()");
+        append(flushPy());
+      } else if (cmd === "3") {
+        mp_js_do_str("todo_list.clear()");
+        append("Quitting\n\nYour To Do List is empty");
+      } else if (cmd === "help") {
+        append("Type the number of an option to execute it.\n\n1 = Add a task\n2 = Remove the last task\n3 = Quit the program");
+      } else if (cmd === "credits") {
+        append("This was originally created on Mimo.");
+      } else if (cmd === "copyright") {
+        append("Copyright (c) 2001-2025 Python Software Foundation.\nAll Rights Reserved.");
+      } else if (cmd === "license") {
+        append("Python is distributed under the PSF License.\nSee https://docs.python.org/3/license.html for details.");
+      } else {
+        append("Invalid choice");
+      }
+    }
+
+    /* Enter key handling and auto-focus */
+    cmdEl.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const raw = cmdEl.innerText;
+        cmdEl.textContent = " "; // keep baseline stable and cursor visible
+        runCommand(raw);
+      }
+    });
+    cmdEl.addEventListener("input", normalize);
+
+    window.addEventListener("load", () => {
+      normalize();
+      cmdEl.focus();          // no click needed to type
+      initMicroPython();      // lightweight; cursor blinks instantly
+    });
+    document.getElementById("terminal").addEventListener("click", () => cmdEl.focus());
   </script>
 </body>
 </html>
