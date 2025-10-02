@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Unit Converter</title>
+  <style>
+    /* Page background and base spacing */
+    body {
+      background-color: darkgreen;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Title styling */
+    h1 {
+      background-color: white;
+      padding: 20px;
+      border-radius: 20px;
+      text-align: center;
+    }
+
+    /* Result box styling */
+    p {
+      background-color: white;
+      color: black;
+      border-radius: 20px;
+      width: 300px;
+      min-height: 30px;
+      padding: 20px;
+    }
+
+    /* Inputs and button spacing */
+    input, select, button {
+      margin: 10px 5px 20px 0;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #fff;
+      border: 1px solid #333;
+    }
+    button:hover {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+  <h1>Unit Converter</h1>
+
+  <!-- User input field -->
+  <input type="number" id="userInput" placeholder="Enter number..." />
+
+  <!-- Conversion type selector -->
+  <select id="unit">
+    <option value="milesToKm">Miles to Kilometers</option>
+    <option value="kmToMiles">Kilometers to Miles</option>
+  </select>
+
+  <!-- Trigger conversion -->
+  <button onclick="convert()">Convert</button>
+
+  <!-- Result display -->
+  <p>Result: <span id="resultElement">0</span></p>
+
+  <script>
+    // Conversion function: triggered by button click
+    function convert() {
+      const inputValue = parseFloat(document.getElementById('userInput').value);
+      const unit = document.getElementById('unit').value;
+      const resultElement = document.getElementById('resultElement');
+
+      // Validate input
+      if (isNaN(inputValue)) {
+        resultElement.textContent = "Please enter a valid number.";
+        return;
+      }
+
+      let result = 0;
+      let resultString = "";
+
+      // Miles → Kilometers
+      if (unit === 'milesToKm') {
+        result = inputValue * 1.60934;
+        const mileLabel = inputValue === 1 ? "mile" : "miles";
+        const kmLabel = result === 1 ? "kilometer" : "kilometers";
+        resultString = `${inputValue} ${mileLabel} equals ${result.toFixed(2)} ${kmLabel}`;
+
+      // Kilometers → Miles
+      } else if (unit === 'kmToMiles') {
+        result = inputValue / 1.60934;
+        const kmLabel = inputValue === 1 ? "kilometer" : "kilometers";
+        const mileLabel = result === 1 ? "mile" : "miles";
+        resultString = `${inputValue} ${kmLabel} equals ${result.toFixed(2)} ${mileLabel}`;
+
+      // Fallback (shouldn’t happen with current options)
+      } else {
+        resultString = "Invalid conversion type selected.";
+      }
+
+      // Display result
+      resultElement.textContent = resultString;
+    }
+  </script>
+</body>
+</html>
