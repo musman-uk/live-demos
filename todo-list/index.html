@@ -53,10 +53,23 @@
 }
 
     #command {
-      flex: 1; background: #000; border: none; color: #fff;
-      font-family: inherit; font-size: 1em; outline: none;
-      caret-color: #fff; /* native blinking caret */
-    }
+     outline: none;
+     white-space: pre;       /* preserve spaces */
+     caret-color: transparent; /* hide native caret */
+  }
+    #command::after {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 1em;
+    background: #fff;
+    animation: blink 1s steps(1) infinite;
+    vertical-align: bottom;
+  }
+
+@keyframes blink {
+  50% { background: transparent; }
+}
   </style>
 </head>
 <body>
@@ -76,6 +89,7 @@ Options:
     </div>
     <div id="input-line">
       <span id="prompt">>>> </span>
+       <span id="command" contenteditable="true"></span>
       <input id="command" type="text" placeholder="Enter your choice 1, 2, or 3:" autofocus />
     </div>
   </div>
@@ -184,13 +198,16 @@ Type "help", "copyright", "credits" or "license" for more information.`;
     }
 
     /* --- Input listener --- */
+    
     document.getElementById("command").addEventListener("keydown", e => {
-      if (e.key === "Enter") {
-        const cmd = e.target.value.trim();
-        e.target.value = "";
-        runCommand(cmd);
-      }
-    });
+     if (e.key === "Enter") {
+     e.preventDefault(); // prevent newline in contenteditable
+     const cmd = e.target.innerText.trim().toLowerCase();
+     e.target.innerText = ""; // clear after enter
+     runCommand(cmd);
+  }
+});
+
   </script>
 </body>
 </html>
