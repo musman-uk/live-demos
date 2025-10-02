@@ -4,12 +4,8 @@
   <meta charset="UTF-8">
   <title>✅ To Do List</title>
 
-  <!-- Preload Pyodide JS and WASM for faster startup -->
-  <link rel="preload" href="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js" as="script">
-  <link rel="preload" href="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.wasm" as="fetch" type="application/wasm" crossorigin>
-
-  <!-- Load Pyodide normally -->
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+  <!-- MicroPython WebAssembly runtime (example path; use a maintained build) -->
+  <script src="https://micropython.org/resources/micropython.js"></script>
 
   <style>
     body {
@@ -44,7 +40,6 @@
     }
     #prompt { margin-right: 6px; }
 
-    /* --- Fake block cursor --- */
     #command {
       outline: none;
       white-space: pre;
@@ -89,31 +84,41 @@ Enter Your Choice, 1, 2, or 3
   </div>
 
   <!-- Python logic -->
-  <script type="text/python" id="py-code">
+  <script id="py-code" type="text/plain">
+_output = []
+
+def py_print(*args):
+    s = " ".join(str(a) for a in args)
+    _output.append(s)
+
+def flush_output():
+    s = "\n".join(_output)
+    _output.clear()
+    return s
+
 todo_list = []
 
 def show_list():
     if todo_list:
         for i, task in enumerate(todo_list, 1):
-            print(f"{i}. {task}")
-    print()
+            py_print(f"{i}. {task}")
+    py_print("")
 
 def add_task(task):
     todo_list.append(task)
-    print(f"Task '{task}' added to the To Do List")
-    print()
+    py_print(f"Task '{task}' added to the To Do List")
+    py_print("")
 
 def remove_task():
     if todo_list:
         removed = todo_list.pop()
-        print(f"Task '{removed}' removed from the To Do List")
+        py_print(f"Task '{removed}' removed from the To Do List")
     else:
-        print("Your To Do List is empty")
-    print()
+        py_print("Your To Do List is empty")
+    py_print("")
   </script>
 
   <script>
-    /* --- Banner --- */
     function formatDate() {
       const now = new Date();
       return `${now.toDateString()} ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
@@ -125,69 +130,59 @@ Type "help", "copyright", "credits" or "license" for more information.`;
     }
     updateHeader(); setInterval(updateHeader, 60000);
 
-    /* --- Input + cursor baseline stability --- */
     const cmdEl = document.getElementById("command");
 
     function sanitizeInput(raw) {
       return raw
-        .replace(/[\u200B\u200C\u200D]/g, "")  // zero-width chars
-        .replace(/\u00A0/g, " ")               // non-breaking space -> space
+        .replace(/[\u200B\u200C\u200D]/g, "")
+        .replace(/\u00A0/g, " ")
         .trim()
         .toLowerCase();
     }
 
     function normalizeCommand() {
       if (cmdEl.innerText === "") {
-        cmdEl.textContent = " "; // buffer space keeps cursor level
+        cmdEl.textContent = " ";
       }
     }
 
-    /* --- Output handling --- */
     function appendAndStick(text) {
       const out = document.getElementById("output");
       out.textContent += text;
       out.scrollTop = out.scrollHeight;
     }
 
-    /* --- Pyodide bootstrap --- */
-    let pyodideInstance = null;
-    let commandQueue = [];
-    async function initPyodide() {
-      try {
-        const pyodide = await loadPyodide();
-        await pyodide.runPythonAsync(document.getElementById("py-code").textContent);
-        pyodideInstance = pyodide;
-        // Replay queued commands
-        const queued = commandQueue.slice();
-        commandQueue = [];
-        for (const q of queued) {
-          await runCommand(q);
-        }
-      } catch (e) {
-        appendAndStick(`\n[Error] Python failed to load. Try refreshing.\n`);
-        console.error(e);
-      }
+    let mpReady = false;
+    let pyStdout = "";
+    window.mp_js_stdout = s => { pyStdout += s; };
+
+    async function initMicroPython() {
+      mp_js_init(128 * 1024);
+      const code = document.getElementById("py-code").textContent;
+      mp_js_do_str(code);
+      mpReady = true;
     }
 
-    /* --- Command handler --- */
     let awaitingTask = false;
+    let commandQueue = [];
 
-    async function runCommand(cmdRaw) {
+    function runCommand(cmdRaw) {
       const cmd = sanitizeInput(cmdRaw);
       if (!cmd) return;
 
-      if (!pyodideInstance) {
-        commandQueue.push(cmd);
+      if (!mpReady) {
         appendAndStick(`\n>>> ${cmd}\n\n[Loading Python... command queued]\n`);
+        commandQueue.push(cmd);
         return;
       }
 
       let output = "";
-      pyodideInstance.setStdout({ batched: s => output += s });
+      pyStdout = "";
 
       if (awaitingTask) {
-        await pyodideInstance.runPythonAsync(`add_task(${JSON.stringify(cmd)})`);
+        mp_js_do_str(`add_task(${JSON.stringify(cmd)})`);
         awaitingTask = false;
+        output = pyStdout;
         appendAndStick(`\n>>> ${cmd}\n\n${output}`);
         return;
       }
@@ -196,10 +191,10 @@ Type "help", "copyright", "credits" or "license" for more information.`;
         output = "Adding task\n\nEnter the task:";
         awaitingTask = true;
       } else if (cmd === "2") {
-        output = "Removing task\n\n";
-        await pyodideInstance.runPythonAsync("remove_task()");
+        mp_js_do_str("remove_task()");
+        output = pyStdout;
       } else if (cmd === "3") {
-        await pyodideInstance.runPythonAsync("todo_list.clear()");
+        mp_js_do_str("todo_list.clear()");
         output = "Quitting\n\nYour To Do List is empty";
       } else if (cmd === "help") {
         output = "Type the number of an option to execute it.\n\n1 = Add a task\n2 = Remove the last task\n3 = Quit the program";
@@ -216,24 +211,29 @@ Type "help", "copyright", "credits" or "license" for more information.`;
       appendAndStick(`\n>>> ${cmd}\n\n${output}`);
     }
 
-    /* --- Key handling --- */
     cmdEl.addEventListener("keydown", e => {
       if (e.key === "Enter") {
         e.preventDefault();
         e.stopPropagation();
         const raw = cmdEl.innerText;
-        cmdEl.textContent = " "; // reset buffer
+        cmdEl.textContent = " ";
         runCommand(raw);
       }
     });
-
     cmdEl.addEventListener("input", normalizeCommand);
 
-    /* --- Ready to type immediately --- */
     window.addEventListener("load", () => {
       normalizeCommand();
       cmdEl.focus();
-      initPyodide();
+      initMicroPython();
+      const checkReady = setInterval(() => {
+        if (mpReady) {
+          clearInterval(checkReady);
+          const pending = commandQueue.slice();
+          commandQueue = [];
+          pending.forEach(runCommand);
+        }
+      }, 50);
     });
   </script>
 </body>
