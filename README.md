@@ -1,4 +1,4 @@
-# 🌟 Live Demos
+# 🌐 Live Demos
 
 Please feel free to view my live demos here:  
 👉 [Live Demos](https://musman-uk.github.io/live-demos)
