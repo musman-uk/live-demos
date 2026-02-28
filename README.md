@@ -1,4 +1,4 @@
-# live demos
+# Live Demos
 
 If you’ve stumbled in here by accident (we can pretend it didn’t happen, or that it was all part of the plan...) and were actually looking for my portfolio, you’ll find it here:  
 
