@@ -1,6 +1,6 @@
 # Live Demos
 
-If you’ve stumbled in here by accident (we can pretend it didn’t happen, or that it was all part of the plan...) and were actually looking for my portfolio, you’ll find it here:  
+If you have stumbled in here by accident (we can pretend it did not happen, or that it was all part of the plan...) and were actually looking for my portfolio, you can find it here:  
 
 📂 [portfolio](https://github.com/musman-uk/portfolio)
 
