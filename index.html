@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>▶️ Live Demos</title>
+  <!-- Ensures proper scaling on mobile; required for predictable responsive behaviour -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>📘 Guided Project Live Demos</title>
+
   <style>
     body {
       margin:0;
@@ -12,132 +16,119 @@
       padding:2rem;
       display:flex;
       flex-direction:column;
-      align-items:center;
+      align-items:center; /* Centers the main content without extra wrappers */
     }
+
     h1 {
       text-align:center;
       color:#9ccfd8;
       margin-bottom:0.5rem;
     }
+
     p {
       text-align:center;
       color:#c9d1d9;
       margin-bottom:2rem;
-      max-width:650px;
+      max-width:650px; /* Prevents overly wide text blocks on large screens */
       line-height:1.5;
     }
-    .content {
-      display:flex;
-      justify-content:flex-start;
-      width:100%;
-      max-width:1200px;
-      margin-top:1rem;
-    }
+
+    /* Single centred panel: chosen over flex layouts since only one table is present */
     .panel {
-      flex:0 0 40%;       /* wider so table fits neatly */
-      max-width:500px;
-      min-width:320px;
+      width:100%;
+      max-width:500px;  /* Keeps table readable on desktop */
+      min-width:280px;  /* Prevents collapse on small devices */
       background:#161b22;
       border:1px solid #30363d;
       border-radius:6px;
       padding:0.75rem;
       font-size:0.8rem;
-      display:flex;
-      flex-direction:column;
     }
+
     .panel h2 {
       margin:0.3rem 0 0.6rem;
       color:#9ccfd8;
       font-size:1rem;
+      text-align:center;
     }
+
     table {
       border-collapse:collapse;
-      width:100%;
+      width:100%; /* Allows natural fluid scaling */
       font-size:0.8rem;
     }
+
     th, td {
       padding:0.4rem 0.5rem;
       text-align:left;
       border-bottom:1px solid #30363d;
     }
+
     th {
       background:#1f2937;
       color:#9ccfd8;
+      /* Header styling kept subtle to match the dark theme */
     }
+
     tr:hover {
-      background:#1e2a34;
+      background:#1e2a34; /* Light hover feedback without breaking theme contrast */
     }
+
     a {
       color:#9ccfd8;
       text-decoration:none;
       font-weight:500;
     }
+
     a:hover {
       text-decoration:underline;
     }
-    @media (max-width:900px) {
-      .content {
-        flex-direction:column;
-        align-items:center;
-      }
-      .panel {
-        flex:1 1 95%;
-        max-width:none;
-        margin-bottom:1rem;
-      }
-      table { font-size:0.85rem; }
-    }
   </style>
 </head>
+
 <body>
-  <h1>▶️ Live Demos</h1>
-  <p>
-    Welcome to the live demos of my guided projects, feel free to explore them down below.✨  
-    For full descriptions, stacks, and source code, please visit my 
-    <a href="https://github.com/musman-uk/portfolio" target="_blank">portfolio</a>.
+  <h1>📘 Guided Projects Live Demos</h1>
+
+  <p>  
+    Full details are available in my
+    <a href="https://github.com/musman-uk/portfolio" target="_blank">portfolio</a>
   </p>
 
-  <div class="content">
-    <!-- Left Panel: Guided Projects -->
-    <div class="panel">
-      <h2>📘 Guided Projects</h2>
-      <table>
-        <tr>
-          <th>📘 Project</th>
-          <th>▶️ Live Demo</th>
-        </tr>
-        <tr>
-          <td>✅ To Do List</td>
-          <td><a href="todo-list/index.html">View</a></td>
-        </tr>
-        <tr>
-          <td>📊 Transaction Analyser</td>
-          <td><a href="transaction-analyser/index.html">View</a></td>
-        </tr>
-        <tr>
-          <td>🔄 Unit Converter</td>
-          <td><a href="unit-converter/index.html">View</a></td>
-        </tr>
-        <tr>
-          <td>🏆 Score Keeper</td>
-          <td><a href="score-keeper/index.html">View</a></td>
-        </tr>
-        <tr>
-          <td>🐾 Pixel Paws</td>
-          <td><a href="pixel-paws/index.html">View</a></td>
-        </tr>
-        <tr>
-          <td>🖼️ Interactive Gallery</td>
-          <td><a href="interactive-gallery/index.html">View</a></td>
-        </tr>
-        <tr>
-          <td>🔐 Caesar Cipher</td>
-          <td><a href="caesar-cipher/index.html">View</a></td>
-        </tr>
-      </table>
-    </div>
-
-    <!-- Right side left empty for Independent Projects -->
+  <div class="panel">
+    <table>
+      <tr>
+        <th>Project</th>
+        <th>Live Demo</th>
+      </tr>
+      <tr>
+        <td>✅ To Do List</td>
+        <td><a href="todo-list/index.html">View</a></td>
+      </tr>
+      <tr>
+        <td>📊 Transaction Analyser</td>
+        <td><a href="transaction-analyser/index.html">View</a></td>
+      </tr>
+      <tr>
+        <td>🔄 Unit Converter</td>
+        <td><a href="unit-converter/index.html">View</a></td>
+      </tr>
+      <tr>
+        <td>🏆 Score Keeper</td>
+        <td><a href="score-keeper/index.html">View</a></td>
+      </tr>
+      <tr>
+        <td>🐾 Pixel Paws</td>
+        <td><a href="pixel-paws/index.html">View</a></td>
+      </tr>
+      <tr>
+        <td>🖼️ Interactive Gallery</td>
+        <td><a href="interactive-gallery/index.html">View</a></td>
+      </tr>
+      <tr>
+        <td>🔐 Caesar Cipher</td>
+        <td><a href="caesar-cipher/index.html">View</a></td>
+      </tr>
+    </table>
   </div>
 </body>
 </html>
