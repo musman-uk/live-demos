@@ -4,7 +4,7 @@ If you have stumbled in here by accident (we can pretend it did not happen, or t
 
 📂 [portfolio](https://github.com/musman-uk/portfolio)
 
-Else you really just wanted a quick look at my live demos:
+Else you really just wanted a quick look at my guided projects live demos:
 
 ▶️ [Live Demos](https://musman-uk.github.io/live-demos)
 
