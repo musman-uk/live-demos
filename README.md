@@ -5,3 +5,9 @@ If you have stumbled in here by accident (we can pretend it did not happen, or t
 Else you were curious or really just wanted a quick look at my [guided projects live demos](https://musman-uk.github.io/guided-projects-live-demos)
 
 Safe journey, and the best of luck with your travels, fellow explorer! 🚀
+
+---
+
+© Mohammed Usman
+
+All rights reserved. No commercial use, redistribution, or modification.
